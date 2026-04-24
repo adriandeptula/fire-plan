@@ -1,4 +1,3 @@
-
 // ── CALCULATORS ──
 function syncSl() {
   const p = gP();
@@ -57,9 +56,12 @@ function cM() {
   const poza = g("r-poza-check");
   if (poza) {
     if (latDo60 > 0) {
+      // Szacunkowa potrzeba: pełne nominalne wypłaty przez latDo60 lat (uproszczenie — bez odsetek)
       const potrzeba = r.wyAtFIRE * latDo60 * 12;
-      const ok = r.pF >= potrzeba * 0.5;
-      poza.innerHTML = `<span style="color:${ok ? "var(--gr)" : "var(--go)"}">${ok ? "✓" : "⚠"}</span> Poza IKE musi pokryć ${Math.round(latDo60)} lat wypłat do 60. r.ż. · szacunkowo ${PLN(potrzeba)} nominalnie`;
+      // Zielone gdy poza IKE pokrywa co najmniej 100% potrzeb (symulacja w modelu gwarantuje pokrycie,
+      // ale ten wskaźnik pokazuje margines bezpieczeństwa)
+      const ok = r.pF >= potrzeba;
+      poza.innerHTML = `<span style="color:${ok ? "var(--gr)" : "var(--go)"}">${ok ? "✓" : "⚠"}</span> Poza IKE musi pokryć ${Math.round(latDo60)} lat wypłat do 60. r.ż. · szacunkowo ${PLN(potrzeba)} nominalnie (bez odsetek)`;
     } else poza.innerHTML = "";
   }
 
