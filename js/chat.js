@@ -9,19 +9,33 @@ IKE: 2 konta · brak podatku Belki · dostępne od 60 r.ż. Strategia po FIRE: {
 Cel wypłaty dziś: {{WY}} zł/mies. → nominalnie przy FIRE: {{WYNOM}} zł/mies.
 Mów po polsku, podawaj liczby, max 3-4 akapity, konkretne rekomendacje.`;
 
+// Maksymalna liczba wiadomości w historii (user+assistant pary)
+// Zapobiega przekroczeniu limitu tokenów Anthropic
+const CHAT_MAX_PAIRS = 10;
+
 async function sChat() {
   const inp = g("ci"),
     text = inp.value.trim();
   if (!text) return;
   const btn = g("csbtn"),
     msgs = g("chat-m");
+
   msgs.innerHTML += `<div class="msg u"><div class="msl">Ty</div><div class="mb">${text}</div></div>`;
   inp.value = "";
   btn.disabled = true;
-  chatH.push({ role: "user", content: text });
+
   const tid = "t" + Date.now();
   msgs.innerHTML += `<div class="msg a" id="${tid}"><div class="msl">FIRE Agent</div><div class="mb"><div class="th"><span></span><span></span><span></span></div></div></div>`;
   msgs.scrollTop = msgs.scrollHeight;
+
+  // Ogranicz historię do ostatnich CHAT_MAX_PAIRS par — zapobiega błędom tokenów
+  if (chatH.length > CHAT_MAX_PAIRS * 2) {
+    chatH = chatH.slice(-(CHAT_MAX_PAIRS * 2));
+  }
+
+  // Dodaj wiadomość użytkownika DO historii dopiero teraz
+  chatH.push({ role: "user", content: text });
+
   const p = gP(),
     r = p ? getCachedSim() : null,
     f = (n) => new Intl.NumberFormat("pl-PL").format(Math.round(n || 0));
@@ -59,21 +73,41 @@ async function sChat() {
     )
     .replace("{{WY}}", f(wy))
     .replace("{{WYNOM}}", f(wyNom));
+
   try {
-    const res = await fetch("https://fire-chat.adrianxdeptula.workers.dev/", {
+    const workerUrl = "https://fire-chat.TWOJ-SUBDOMAIN.workers.dev";
+    const res = await fetch(workerUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system: sys, messages: chatH }),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    if (!res.ok) {
+      // Usuń ostatnią wiadomość użytkownika z historii — inaczej następne
+      // zapytanie będzie miało dwie kolejne wiadomości user/user co powoduje błąd 400
+      chatH.pop();
+      let errDetail = `HTTP ${res.status}`;
+      try { const errData = await res.json(); errDetail = errData.error || errDetail; } catch {}
+      throw new Error(errDetail);
+    }
+
     const data = await res.json();
     const reply = data.content || data.error || "Przepraszam, wystąpił błąd.";
     chatH.push({ role: "assistant", content: reply });
     g(tid).querySelector(".mb").innerHTML = reply.replace(/\n/g, "<br>");
   } catch (e) {
+    // Jeśli pop() nie był jeszcze wywołany (błąd sieci przed !res.ok), usuń teraz
+    if (chatH.length > 0 && chatH[chatH.length - 1].role === "user") {
+      chatH.pop();
+    }
+    const isNetworkError = e instanceof TypeError;
+    const hint = isNetworkError
+      ? "Sprawdź czy Worker <strong>fire-chat</strong> jest wdrożony w Cloudflare."
+      : `Błąd: ${e.message}. Sprawdź czy klucz <strong>ANTHROPIC_KEY</strong> jest ustawiony w Cloudflare → Worker fire-chat → Settings → Variables.`;
     g(tid).querySelector(".mb").innerHTML =
-      `<span style="color:var(--re)">Błąd połączenia z agentem. Sprawdź czy aplikacja jest na Netlify.</span>`;
+      `<span style="color:var(--re)">${hint}</span>`;
   }
+
   btn.disabled = false;
   msgs.scrollTop = msgs.scrollHeight;
 }
