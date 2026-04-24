@@ -15,7 +15,7 @@ function normalizeComma(el) {
 //   gPoza()    → wartość aktywów poza IKE
 //   getMRI_IKE() → miesięczna stopa zwrotu IKE (Monthly Rate IKE)
 //   getMRP()   → miesięczna stopa zwrotu poza IKE (Monthly Rate Poza)
-//   getINF()   → miesięczna stopa inflacji jako ułamek
+//   getINF()   → roczna stopa inflacji jako ułamek (np. 0.035 dla 3.5%)
 //   getIKEM()  → miesięczny limit wpłat IKE (IKE Monthly)
 //   rA()       → przerenderuj całą aplikację (render All)
 //   rDash()    → renderuj Dashboard
@@ -48,29 +48,13 @@ const sT2 = (id, v) => {
   const e = g(id);
   if (e) e.textContent = v;
 };
-// Miesięczny limit IKE uwzględniający już wpłacone w tym roku
+// Miesięczny limit IKE dla symulacji wieloletniej
+// Używa pełnego rocznego limitu obu kont * ip (niezależnie od wpłat w tym roku)
 function getIKEM() {
   const i1 = pf(S.i1) || 26019;
   const i2 = pf(S.i2) || 26019;
   const ip = pf(S.ip) / 100 || 1;
-  const wpł1 = pf(S.i1wpl) || 0;
-  const wpł2 = pf(S.i2wpl) || 0;
-  // Ile pozostało do wykorzystania w tym roku (nie mniej niż 0)
-  const zostało1 = Math.max(0, i1 - wpł1);
-  const zostało2 = Math.max(0, i2 - wpł2);
-  // Miesięczna rata z pozostałego limitu (zakładamy że jesteśmy na początku roku)
-  // Dla symulacji wieloletniej używamy pełnego limitu obu kont * ip
   return ((i1 + i2) / 12) * ip;
-}
-// Ile TERAZ (ten miesiąc) można wpłacić na IKE — z uwzględnieniem wpłat w tym roku
-function getIKEMNow() {
-  const i1 = pf(S.i1) || 26019;
-  const i2 = pf(S.i2) || 26019;
-  const ip = pf(S.ip) / 100 || 1;
-  const wpł1 = pf(S.i1wpl) || 0;
-  const wpł2 = pf(S.i2wpl) || 0;
-  const zostało = Math.max(0, i1 - wpł1 + (i2 - wpł2));
-  return Math.min(((i1 + i2) / 12) * ip, zostało / 12);
 }
 function getAV(a) {
   if (a.type === "manual") return pf(a.mv);
