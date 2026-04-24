@@ -64,7 +64,8 @@ function sim({
       let pPtest = pP;
       let wystarczy = true;
       for (let mm = 0; mm < latDo60 * 12; mm++) {
-        pPtest = pPtest * (1 + MRP) - potrzebaM / 12;
+        // potrzebaM jest już kwotą miesięczną — nie dziel przez 12
+        pPtest = pPtest * (1 + MRP) - potrzebaM;
         if (pPtest < 0) {
           wystarczy = false;
           break;
@@ -94,10 +95,14 @@ function sim({
     const wyNom = wy * Math.pow(1 + inf, latDoFIRE); // nominalna wypłata w tym roku
     const G = wyNom * 12 * 25;
 
-    // CoastFIRE: portfel urośnie do celu G bez dalszych wpłat jeśli >= G / (1+inf)^rem_lat
+    // CoastFIRE: portfel urośnie do celu G bez dalszych wpłat
+    // Formuła: portfel >= G / (1 + roczny_zwrot)^lat_do_FIRE
+    // Używamy docelowego wieku FIRE z ustawień jako horyzontu
     if (cm === -1) {
-      const rem = (60 * 12 - m) / 12;
-      if (pI + pP >= G / Math.pow(1 + inf, rem)) cm = m;
+      const annualReturn = (pf(S.brutto) || 7) / 100;
+      const latDoFIRETarget = Math.max(0, (pf(S.wf) || 50) - wiek);
+      const rem = Math.max(0, latDoFIRETarget - m / 12);
+      if (rem > 0 && pI + pP >= G / Math.pow(1 + annualReturn, rem)) cm = m;
     }
 
     // Warunek FIRE dwufazowy:
@@ -111,7 +116,8 @@ function sim({
       let wystarczy = true;
       for (let mm = 0; mm < latDo60 * 12; mm++) {
         // jeśli opcja cont — IKE dalej dostaje wpłaty
-        pPtest = pPtest * (1 + MRP) - potrzebaM / 12;
+        // potrzebaM jest już kwotą miesięczną — nie dziel przez 12
+        pPtest = pPtest * (1 + MRP) - potrzebaM;
         if (pPtest < 0) {
           wystarczy = false;
           break;
@@ -141,11 +147,12 @@ function sim({
 
   // IKE po FIRE: rośnie bez wypłat (lub z wpłatami jeśli cont)
   // poza IKE: wypłacamy (wyAtFIRE - wynajemNetto) /mies
+  // portWithdraw jest już kwotą miesięczną
   const portWithdraw = Math.max(0, wyAtFIRENom - wynajemNetto);
   for (let mm = 0; mm < y60 * 12; mm++) {
     if (ikeStrat === "cont") i60 = i60 * (1 + MRI) + ikePostInv / 12;
     else i60 = i60 * (1 + MRI);
-    p60 = p60 * (1 + MRP) - portWithdraw / 12;
+    p60 = p60 * (1 + MRP) - portWithdraw;
     if (p60 < 0) p60 = 0;
   }
   const m60 = ((i60 + p60) * 0.04) / 12 + wynajemNetto;
