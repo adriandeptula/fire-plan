@@ -296,6 +296,1948 @@
             </div>
             <div class="card">
               <div class="ct" style="background: var(--pu)"></div>
+              <div class="cl">Cel wypłaty FIRE
+                <span class="tip-wrap"><span class="tip-ic">i</span><span class="tip-box">Kwota w dzisiejszych złotych (siła nabywcza). Poniżej kwota nominalna uwzględniająca skumulowaną inflację do roku FIRE.</span></span>
+              </div>
+              <div class="cv go" id="k-cel-real-val">— zł/mies.</div>
+              <div class="cs" id="k-cel-nom-sub"></div>
+              <div class="inf-badge" id="k-cel-real"></div>
+            </div>
+            <div class="card">
+              <div class="ct" style="background: var(--gr)"></div>
+              <div class="cl">Od 60. roku życia
+                <span class="tip-wrap"><span class="tip-ic">i</span><span class="tip-box">Wypłata po odblokowaniu IKE w 60. r.ż. Podana w dzisiejszych złotych (siła nabywcza). Poniżej wartość nominalna.</span></span>
+              </div>
+              <div class="cv go" id="k60-real">— zł/mies.</div>
+              <div class="cs" id="k60-nom-sub"></div>
+            </div>
+          </div>
+          <!-- ROW 2: desktop 3 cols, mobile: mies full-width + 2 cols -->
+          <div class="dash-row2">
+            <div class="card dash-mies-card">
+              <div class="ct" style="background: var(--go)"></div>
+              <div class="cl">Miesięcznie na FIRE</div>
+              <div class="cv" id="ki">— zł</div>
+              <div class="cs">Kwota przeznaczana w każdym miesiącu</div>
+            </div>
+            <div class="card">
+              <div class="ct" style="background: var(--bl)"></div>
+              <div class="cl">Portfel poza IKE przy FIRE</div>
+              <div class="cv bl" id="k-poza-fire">— zł</div>
+              <div class="cs">Pokrywa wypłaty przed 60. r.ż.</div>
+            </div>
+            <div class="card">
+              <div class="ct" style="background: var(--gr)"></div>
+              <div class="cl">Portfel IKE przy FIRE</div>
+              <div class="cv gr" id="k-ike-fire">— zł</div>
+              <div class="cs">Dostępny od 60. r.ż.</div>
+            </div>
+          </div>
+          <!-- ROW 2b: Portfel w wieku 60 lat -->
+          <div class="card" style="margin-bottom: 11px; border-color: var(--grc)">
+            <div class="ct" style="background: var(--gr)"></div>
+            <div class="cl">Portfel w wieku 60 lat — łącznie
+              <span class="tip-wrap"><span class="tip-ic">i</span><span class="tip-box">Wartość portfela po odblokowaniu IKE — suma portfela poza IKE i IKE po fazie wypłat (FIRE → 60 r.ż.). Wartości nominalne (przyszłe złotówki).</span></span>
+            </div>
+            <div class="cv go" id="k-p60-total">— zł</div>
+            <div class="cs" id="k-p60-wyp-real"></div>
+            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mu); margin-bottom: 3px;">Poza IKE</div>
+                <div style="font-family: 'Lora', serif; font-size: 16px; font-weight: 600; color: var(--bl);" id="k-p60-poza">— zł</div>
+              </div>
+              <div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mu); margin-bottom: 3px;">IKE</div>
+                <div style="font-family: 'Lora', serif; font-size: 16px; font-weight: 600; color: var(--gr);" id="k-p60-ike">— zł</div>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: var(--mu); margin-top: 6px;" id="k-p60-wyp-nom"></div>
+          </div>
+          <!-- ROW 3: desktop 3 cols (zadłużenia gdy > 0), mobile 2 cols + full-width zadłużenia -->
+          <div class="dash-row4">
+            <div class="card">
+              <div class="ct" style="background: var(--go)"></div>
+              <div class="cl">Portfel inwestycyjny</div>
+              <div class="cv go" id="kp">— zł</div>
+              <div class="cs" id="kps">—</div>
+            </div>
+            <div class="card">
+              <div class="ct" style="background: var(--gr)"></div>
+              <div class="cl">Majątek netto</div>
+              <div class="cv gr" id="kn">— zł</div>
+              <div class="cs">Wszystkie aktywa po odjęciu zobowiązań</div>
+            </div>
+            <div class="card" id="kk-card" style="display: none">
+              <div class="ct" style="background: var(--re)"></div>
+              <div class="cl">Zadłużenia</div>
+              <div class="cv re" id="kk">— zł</div>
+              <div class="cs">Suma zobowiązań</div>
+            </div>
+          </div>
+          <!-- mobile-only: zadłużenia full-width -->
+          <div id="kk-mobile-row" style="display: none; margin-bottom: 8px">
+            <div class="card">
+              <div class="ct" style="background: var(--re)"></div>
+              <div class="cl">Zadłużenia</div>
+              <div class="cv re" id="kk-m">— zł</div>
+              <div class="cs">Suma zobowiązań</div>
+            </div>
+          </div>
+          <div style="margin-bottom: 18px">
+            <div class="sh">
+              <div class="st">Aktywa — wycena live</div>
+              <div class="sa" onclick="gn('portfel')">Zarządzaj →</div>
+            </div>
+            <div class="tw" id="dt"></div>
+          </div>
+        </div>
+
+        <!-- PORTFEL -->
+        <div id="p-portfel" class="panel">
+          <div
+            class="ph"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+            "
+          >
+            <div>
+              <div class="pt">Portfel</div>
+              <div class="ps">
+                Wpisz ilości jednostek — wycena przez API automatycznie
+              </div>
+            </div>
+            <button class="btn bp" onclick="openAM()">+ Dodaj aktywo</button>
+          </div>
+          <div class="g3" style="margin-bottom: 14px">
+            <div class="card">
+              <div class="cl">Wszystkie aktywa</div>
+              <div class="cv go" id="pt">0 zł</div>
+              <div class="cs">
+                <span class="pdot" id="pdot"></span> <span id="ptxt">—</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="cl">
+                IKE (zwrot <span id="port-ike-rate">7.0</span>%)
+              </div>
+              <div class="cv gr" id="pike">0 zł</div>
+              <div class="cs">Bez podatku Belki</div>
+            </div>
+            <div class="card">
+              <div class="cl">
+                Poza IKE (<span id="port-poza-rate">5.1</span>% real.)
+              </div>
+              <div class="cv bl" id="ppoza">0 zł</div>
+              <div class="cs">Po podatku Belki</div>
+            </div>
+          </div>
+          <div id="p-extra"></div>
+          <div class="tb" style="margin-bottom: 12px">
+            <button class="tbn on" id="pt-tab-assets" onclick="swPT('assets')">
+              Aktywa
+            </button>
+            <button class="tbn" id="pt-tab-hist" onclick="swPT('hist')">
+              Historia portfela
+            </button>
+          </div>
+          <div id="pt-assets">
+            <div style="margin-bottom: 14px">
+              <div class="tw" id="at"></div>
+            </div>
+            <button
+              class="btn bsm"
+              style="
+                background: var(--reb);
+                border: 1px solid var(--rec);
+                color: var(--re);
+                margin-bottom: 12px;
+              "
+              onclick="openLiabModal()"
+            >
+              + Dodaj zobowiązanie
+            </button>
+            <div id="liab-list-wrap"></div>
+          </div>
+          <div id="pt-hist" style="display: none">
+            <div class="tw" id="port-hist-tbl"></div>
+          </div>
+        </div>
+
+        <!-- BUDŻET FIRE -->
+        <div id="p-budzet" class="panel">
+          <div class="ph">
+            <div class="pt">Budżet FIRE</div>
+            <div class="ps">
+              Stałe założenia planu — wiek, cel, miesięczna kwota inwestycji
+            </div>
+          </div>
+          <div class="tc">
+            <div>
+              <div class="st" style="margin-bottom: 8px">Cele FIRE</div>
+              <div class="card" style="margin-bottom: 12px">
+                <div class="fg">
+                  <label class="fl">Twój obecny wiek</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bwt"
+                      placeholder="31"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">lat</span>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label class="fl">Docelowy wiek FIRE</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bwf"
+                      placeholder="50"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">lat</span>
+                  </div>
+                </div>
+                <div class="fg" style="margin-bottom: 0">
+                  <label class="fl"
+                    >Wypłata na FIRE (dziś, zł/mies.)
+                    <span class="tip-wrap"
+                      ><span class="tip-ic">i</span
+                      ><span class="tip-box" id="bwy-tip"
+                        >Wpisujesz kwotę w dzisiejszych złotych (siła nabywcza).
+                        Model automatycznie przelicza ją na wartość nominalną
+                        przy FIRE uwzględniając skumulowaną inflację.</span
+                      ></span
+                    >
+                  </label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bwy"
+                      placeholder="15000"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                  <div
+                    class="inf-badge"
+                    id="bwy-nom"
+                    style="margin-top: 5px"
+                  ></div>
+                </div>
+              </div>
+              <div class="st" style="margin-bottom: 8px">
+                Miesięczna kwota na FIRE
+              </div>
+              <div class="card" style="margin-bottom: 12px">
+                <div class="al alb" style="margin-bottom: 10px">
+                  <div class="ali">ℹ</div>
+                  <div>
+                    <div class="alb2">
+                      Stała kwota do symulacji planu. Niezależna od miesięcznych
+                      zarobków. Zmieniaj gdy zmieniają się Twoje możliwości.
+                    </div>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label class="fl">Łącznie na FIRE (zł/mies.)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="binv"
+                      placeholder="9000"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+                <div class="fg" style="margin-bottom: 10px">
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 7px;
+                      cursor: pointer;
+                      font-size: 11px;
+                      font-weight: 600;
+                      color: var(--t2);
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="binv-inf"
+                      onchange="
+                        sS();
+                        rA();
+                      "
+                      style="
+                        width: 14px;
+                        height: 14px;
+                        accent-color: var(--go);
+                        cursor: pointer;
+                      "
+                    />
+                    Zwiększaj wpłatę o inflację co roku
+                  </label>
+                  <div
+                    style="font-size: 10px; color: var(--mu); margin-top: 3px"
+                  >
+                    Co 12 miesięcy wpłata rośnie o stopę inflacji z ustawień
+                    (skumulowana)
+                  </div>
+                </div>
+                <hr />
+                <div class="st" style="font-size: 12px; margin-bottom: 7px">
+                  Limity IKE (aktualizuj co roku)
+                </div>
+                <div class="fg">
+                  <label class="fl">Limit IKE — Twoje (zł/rok)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bike1"
+                      placeholder="26019"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label class="fl">Limit IKE — Żony (zł/rok)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bike2"
+                      placeholder="26019"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label class="fl">Już wpłacono w tym roku — Twoje (zł)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bike1-wpł"
+                      placeholder="0"
+                      oninput="
+                        sS();
+                        rBud();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label class="fl">Już wpłacono w tym roku — Żony (zł)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bike2-wpł"
+                      placeholder="0"
+                      oninput="
+                        sS();
+                        rBud();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+                <div class="fg" style="margin-bottom: 0">
+                  <label class="fl">Ile z limitu IKE faktycznie wpłacasz</label>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 9px;
+                      margin-top: 4px;
+                    "
+                  >
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      id="bikep"
+                      value="100"
+                      oninput="
+                        sS();
+                        rBud();
+                      "
+                    />
+                    <span
+                      style="
+                        font-family: &quot;JetBrains Mono&quot;, monospace;
+                        font-size: 12px;
+                        color: var(--go);
+                        font-weight: 500;
+                        min-width: 34px;
+                        text-align: right;
+                      "
+                      id="ikepl"
+                      >100%</span
+                    >
+                  </div>
+                  <div
+                    style="font-size: 10px; color: var(--mu); margin-top: 3px"
+                  >
+                    0% = nic · 50% = połowa limitu · 100% = maksimum obu kont
+                  </div>
+                </div>
+              </div>
+              <!-- Opcja IKE po FIRE — 4 opcje + stop -->
+              <div class="st" style="margin-bottom: 8px">IKE po przejściu na FIRE</div>
+              <div class="card" style="margin-bottom: 12px">
+                <div class="fg" style="margin-bottom: 8px">
+                  <label class="fl">Strategia IKE po FIRE</label>
+                  <select class="fs" id="ike-strategy" onchange="sS();rA();">
+                    <option value="stop">Brak wpłat — IKE rośnie samodzielnie (domyślna)</option>
+                    <option value="A">A: Stała kwota z portfela FIRE (poza IKE)</option>
+                    <option value="B">B: % limitu IKE z portfela FIRE (poza IKE)</option>
+                    <option value="C">C: Stała kwota ze źródła zewnętrznego</option>
+                    <option value="D">D: % limitu IKE ze źródła zewnętrznego</option>
+                  </select>
+                </div>
+
+                <!-- Opcja A: stała kwota z portfela -->
+                <div id="ike-strat-A" style="display:none">
+                  <div class="fg" style="margin-bottom:0">
+                    <label class="fl">
+                      Roczna wpłata na IKE (zł/rok)
+                      <span class="tip-wrap"><span class="tip-ic">i</span><span class="tip-box">Kwota pochodzi z portfela poza IKE — zmniejsza dostępny kapitał na wypłaty. Nie powinna przekraczać sumy rocznych limitów obu kont IKE w danym roku (nie wiemy jakie będą — zakładaj obecne lub indeksowane inflacją).</span></span>
+                    </label>
+                    <div class="iu">
+                      <input class="fi" type="number" id="ike-post-inv-a" placeholder="np. 52000" oninput="sS();rA();" /><span class="iuv">zł/rok</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Opcja B: % limitu z portfela -->
+                <div id="ike-strat-B" style="display:none">
+                  <div style="font-size:11px;color:var(--t2);margin-bottom:8px">
+                    System co roku indeksuje limity IKE o skumulowaną inflację od teraz do momentu wpłaty.
+                  </div>
+                  <div class="fg">
+                    <label class="fl">% limitu IKE — konto 1</label>
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <input type="range" min="0" max="100" step="5" id="ike-post-inv-b1" value="0" oninput="sS();rA();g('ike-b1-val').textContent=this.value+'%'" />
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--go);min-width:34px" id="ike-b1-val">0%</span>
+                    </div>
+                  </div>
+                  <div class="fg" style="margin-bottom:0">
+                    <label class="fl">% limitu IKE — konto 2</label>
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <input type="range" min="0" max="100" step="5" id="ike-post-inv-b2" value="0" oninput="sS();rA();g('ike-b2-val').textContent=this.value+'%'" />
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--go);min-width:34px" id="ike-b2-val">0%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Opcja C: stała kwota ze źródła zewnętrznego -->
+                <div id="ike-strat-C" style="display:none">
+                  <div class="fg" style="margin-bottom:0">
+                    <label class="fl">
+                      Roczna wpłata na IKE (zł/rok)
+                      <span class="tip-wrap"><span class="tip-ic">i</span><span class="tip-box">Kwota pochodzi ze źródła zewnętrznego (praca dorywcza, wynajem, inne) — nie zmniejsza portfela FIRE. Nie powinna przekraczać sumy limitów IKE w danym roku.</span></span>
+                    </label>
+                    <div class="iu">
+                      <input class="fi" type="number" id="ike-post-inv-c" placeholder="np. 52000" oninput="sS();rA();" /><span class="iuv">zł/rok</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Opcja D: % limitu ze źródła zewnętrznego -->
+                <div id="ike-strat-D" style="display:none">
+                  <div style="font-size:11px;color:var(--t2);margin-bottom:8px">
+                    Limity IKE indeksowane inflacją. Wpłaty finansowane ze źródła zewnętrznego — portfel FIRE pozostaje nienaruszony.
+                  </div>
+                  <div class="fg">
+                    <label class="fl">% limitu IKE — konto 1</label>
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <input type="range" min="0" max="100" step="5" id="ike-post-inv-d1" value="0" oninput="sS();rA();g('ike-d1-val').textContent=this.value+'%'" />
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--go);min-width:34px" id="ike-d1-val">0%</span>
+                    </div>
+                  </div>
+                  <div class="fg" style="margin-bottom:0">
+                    <label class="fl">% limitu IKE — konto 2</label>
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <input type="range" min="0" max="100" step="5" id="ike-post-inv-d2" value="0" oninput="sS();rA();g('ike-d2-val').textContent=this.value+'%'" />
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--go);min-width:34px" id="ike-d2-val">0%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="al alb" style="margin-top: 10px; margin-bottom: 0">
+                  <div class="ali">ℹ</div>
+                  <div><div class="alb2" id="ike-strat-info">IKE rośnie samodzielnie przez cały okres do 60. roku życia bez żadnych dodatkowych wpłat. Portfel poza IKE pokrywa wypłaty.</div></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="st" style="margin-bottom: 8px">
+                Struktura inwestycji FIRE
+              </div>
+              <div class="card" id="ike-prev" style="margin-bottom: 12px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUDŻET DOMOWY -->
+        <div id="p-budzet-dom" class="panel">
+          <div class="ph">
+            <div class="pt">Budżet domowy</div>
+            <div class="ps">
+              Stałe wydatki, podział nadwyżki i kalkulator wypłaty
+            </div>
+          </div>
+          <div class="tc">
+            <div>
+              <div class="st" style="margin-bottom: 8px">
+                Stałe wydatki miesięczne
+              </div>
+              <div class="card" style="margin-bottom: 12px">
+                <div class="fg">
+                  <label class="fl">Wydatki życiowe (zł/mies.)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bwyd"
+                      placeholder="5500"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+                <div class="fg" style="margin-bottom: 0">
+                  <label class="fl">Rozrywka / kieszonkowe (zł/mies.)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="broz"
+                      placeholder="1000"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+              </div>
+              <div class="st" style="margin-bottom: 8px">
+                Podział nadwyżki (kalkulator miesięczny)
+              </div>
+              <div class="card">
+                <div class="fg">
+                  <label class="fl">% na wakacje</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bpw"
+                      placeholder="10"
+                      min="0"
+                      max="100"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">%</span>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label class="fl">% na rezerwę</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bpr"
+                      placeholder="10"
+                      min="0"
+                      max="100"
+                      oninput="
+                        sS();
+                        rA();
+                      "
+                    /><span class="iuv">%</span>
+                  </div>
+                </div>
+                <div class="fg" style="margin-bottom: 0">
+                  <label class="fl">% na inwestycje (auto)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="bpi"
+                      readonly
+                      style="opacity: 0.5"
+                    /><span class="iuv">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="st" style="margin-bottom: 8px">
+                Kalkulator podziału wypłaty
+              </div>
+              <div class="card">
+                <div class="cl" style="margin-bottom: 12px">
+                  Szybki podział kwoty
+                </div>
+                <div class="fg">
+                  <label class="fl">Kwota do rozliczenia (zł)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="wyp-kwota"
+                      placeholder="np. 25000"
+                      oninput="cWyp()"
+                    /><span class="iuv">zł</span>
+                  </div>
+                </div>
+                <hr />
+                <div class="slr">
+                  <div class="slh">
+                    <span>% na wakacje</span
+                    ><span class="slv" id="wyp-sv1">10%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="5"
+                    value="10"
+                    id="wyp-s1"
+                    oninput="cWyp()"
+                  />
+                </div>
+                <div class="slr">
+                  <div class="slh">
+                    <span>% na wydatki nieplanowane</span
+                    ><span class="slv" id="wyp-sv2">10%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="5"
+                    value="10"
+                    id="wyp-s2"
+                    oninput="cWyp()"
+                  />
+                </div>
+                <div class="slr" style="margin-bottom: 0">
+                  <div class="slh">
+                    <span>% na inwestycje</span
+                    ><span class="slv" id="wyp-sv3" style="color: var(--go)"
+                      >80%</span
+                    >
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value="80"
+                    id="wyp-s3"
+                    oninput="cWyp()"
+                  />
+                </div>
+                <div class="rb"><div id="wyp-res"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MIESIĘCZNY -->
+        <div id="p-mies" class="panel">
+          <div class="ph">
+            <div class="pt">Kalkulator domowy</div>
+            <div class="ps">
+              Wylicz podział wypłaty i zapisz rozliczenie miesiąca
+            </div>
+          </div>
+          <div class="tb">
+            <button class="tbn on" id="mt-k" onclick="swMT('k')">
+              Kalkulator</button
+            ><button class="tbn" id="mt-h" onclick="swMT('h')">Historia</button>
+          </div>
+          <div id="mt-kalk">
+            <div class="tc">
+              <div>
+                <div class="st" style="margin-bottom: 8px">
+                  Źródła dochodu w tym miesiącu
+                </div>
+                <div class="card" style="margin-bottom: 10px">
+                  <div id="inc-list"></div>
+                  <button
+                    class="btn bgh bsm"
+                    onclick="addInc()"
+                    style="width: 100%; margin-top: 5px"
+                  >
+                    + Dodaj źródło
+                  </button>
+                </div>
+                <div class="card">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      margin-bottom: 9px;
+                    "
+                  >
+                    <div class="st" style="margin-bottom: 0; font-size: 13px">
+                      Łączny dochód
+                    </div>
+                    <div
+                      style="
+                        font-family: &quot;Lora&quot;, serif;
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: var(--gr);
+                      "
+                      id="mtot"
+                    >
+                      0 zł
+                    </div>
+                  </div>
+                  <div class="fg" style="margin-bottom: 0">
+                    <label class="fl">Miesiąc rozliczenia</label
+                    ><select class="fs" id="mmies"></select>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="st" style="margin-bottom: 8px">
+                  Podział tego miesiąca
+                </div>
+                <div class="card" style="margin-bottom: 10px" id="msplit"></div>
+                <button class="btn bp" style="width: 100%" onclick="rozlicz()">
+                  ✓ Rozlicz ten miesiąc
+                </button>
+                <button
+                  class="btn bgh"
+                  style="width: 100%; margin-top: 8px"
+                  onclick="zapiszKalk()"
+                >
+                  💾 Zapisz dane (bez historii)
+                </button>
+                <div
+                  style="
+                    font-size: 10px;
+                    color: var(--mu);
+                    margin-top: 5px;
+                    text-align: center;
+                  "
+                >
+                  Rozlicz → zapisuje w historii · Zapisz → zapamiętuje kwoty
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="mt-hist" style="display: none">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 11px;
+                flex-wrap: wrap;
+                gap: 8px;
+              "
+            >
+              <select
+                class="fs"
+                id="hrok"
+                onchange="rHist()"
+                style="width: auto; padding: 6px 10px"
+              ></select>
+              <div
+                id="hkpi"
+                style="display: flex; gap: 8px; flex-wrap: wrap"
+              ></div>
+            </div>
+            <div class="tw" id="htbl"></div>
+          </div>
+        </div>
+
+        <!-- KALKULATOR -->
+        <div id="p-kalk" class="panel">
+          <div class="ph">
+            <div class="pt">Kalkulator FIRE</div>
+            <div class="ps">
+              Symulacja dwufazowa · IKE bez Belki · Analiza po 60. roku
+            </div>
+          </div>
+          <div class="tb">
+            <button class="tbn on" id="ct-m" onclick="swCT('m')">Główna</button
+            ><button class="tbn" id="ct-min" onclick="swCT('min')">
+              Min. kwota
+            </button>
+          </div>
+          <div id="ck-m">
+            <div class="tc">
+              <div class="card">
+                <div class="cl" style="margin-bottom: 12px">
+                  Parametry symulacji
+                </div>
+                <div class="fg">
+                  <label class="fl">Miesięcznie na FIRE (zł)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s1"
+                      placeholder="np. 9000"
+                      oninput="cM()"
+                    /><span class="iuv">zł</span>
+                  </div>
+                  <div
+                    style="font-size: 10px; color: var(--mu); margin-top: 2px"
+                    id="sv1"
+                  ></div>
+                </div>
+                <div class="fg">
+                  <label class="fl">Z tego na IKE /mies. (zł)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s2"
+                      placeholder="np. 4336"
+                      oninput="cM()"
+                    /><span class="iuv">zł</span>
+                  </div>
+                  <div
+                    style="font-size: 10px; color: var(--mu); margin-top: 2px"
+                    id="sv2"
+                  ></div>
+                </div>
+                <div class="fg">
+                  <label class="fl">Portfel startowy (zł)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s3"
+                      placeholder="np. 0"
+                      oninput="cM()"
+                    /><span class="iuv">zł</span>
+                  </div>
+                  <div
+                    style="font-size: 10px; color: var(--mu); margin-top: 2px"
+                    id="sv3"
+                  ></div>
+                </div>
+                <div class="fg" style="margin-bottom: 0">
+                  <label class="fl">Cel wypłaty FIRE /mies. dziś (zł)</label>
+                  <div class="iu">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s4"
+                      value="15000"
+                      oninput="cM()"
+                    /><span class="iuv">zł</span>
+                  </div>
+                  <div
+                    style="font-size: 10px; color: var(--mu); margin-top: 2px"
+                    id="sv4"
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div class="rb" style="margin-top: 0">
+                  <div
+                    style="
+                      font-family: &quot;JetBrains Mono&quot;, monospace;
+                      font-size: 9px;
+                      letter-spacing: 0.2em;
+                      text-transform: uppercase;
+                      color: var(--mu);
+                      margin-bottom: 3px;
+                    "
+                  >
+                    WYNIK
+                  </div>
+                  <div class="rg">
+                    <div class="ri">
+                      <div class="rl">Wiek FIRE</div>
+                      <div class="rn" style="color: var(--go)" id="r1">—</div>
+                    </div>
+                    <div class="ri">
+                      <div class="rl">Rok FIRE</div>
+                      <div class="rn" style="color: var(--gr)" id="r2">—</div>
+                    </div>
+                    <div class="ri">
+                      <div class="rl">
+                        Cel portfela
+                        <span class="tip-wrap"
+                          ><span class="tip-ic">i</span
+                          ><span class="tip-box" id="r3-tip"
+                            >Nominalny cel portfela przy FIRE — uwzględnia
+                            skumulowaną inflację od dziś do roku FIRE.</span
+                          ></span
+                        >
+                      </div>
+                      <div class="rn" id="r3">—</div>
+                      <div
+                        style="
+                          font-family: &quot;JetBrains Mono&quot;, monospace;
+                          font-size: 9px;
+                          color: var(--mu);
+                          margin-top: 2px;
+                        "
+                        id="r3-real"
+                      ></div>
+                    </div>
+                  </div>
+                  <hr />
+                  <div class="rg">
+                    <div class="ri">
+                      <div class="rl">Poza IKE przy FIRE</div>
+                      <div class="rn" id="r4">—</div>
+                    </div>
+                    <div class="ri">
+                      <div class="rl">IKE przy FIRE</div>
+                      <div class="rn" style="color: var(--gr)" id="r4b">—</div>
+                    </div>
+                    <div class="ri">
+                      <div class="rl">Od 60 lat</div>
+                      <div class="rn" style="color: var(--go)" id="r6">—</div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      margin-top: 8px;
+                      padding: 8px;
+                      background: var(--s3);
+                      border-radius: 4px;
+                      font-size: 11px;
+                      color: var(--t2);
+                    "
+                    id="r-poza-check"
+                  ></div>
+                </div>
+                <div id="ph-box" style="margin-top: 9px"></div>
+                <div class="al alg" style="margin-top: 8px; margin-bottom: 0">
+                  <div class="ali">💡</div>
+                  <div>
+                    <div class="alt">Insight</div>
+                    <div class="alb2" id="ri">
+                      Wpisz parametry żeby zobaczyć wynik.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="ck-min" style="display: none">
+            <div class="card" style="max-width: 520px">
+              <div class="cl" style="margin-bottom: 12px">
+                Ile miesięcznie na FIRE żeby przejść w danym wieku?
+              </div>
+              <div class="fg">
+                <label class="fl">Docelowy wiek FIRE</label>
+                <div class="iu">
+                  <input
+                    class="fi"
+                    type="number"
+                    id="ms1"
+                    value="50"
+                    oninput="cMin()"
+                  /><span class="iuv">lat</span>
+                </div>
+                <div
+                  style="font-size: 10px; color: var(--mu); margin-top: 2px"
+                  id="msv1"
+                ></div>
+              </div>
+              <div class="fg">
+                <label class="fl">Wypłata na FIRE /mies. dziś (zł)</label>
+                <div class="iu">
+                  <input
+                    class="fi"
+                    type="number"
+                    id="ms2"
+                    value="15000"
+                    oninput="cMin()"
+                  /><span class="iuv">zł</span>
+                </div>
+                <div
+                  style="font-size: 10px; color: var(--mu); margin-top: 2px"
+                  id="msv2"
+                ></div>
+              </div>
+              <div class="rb">
+                <div
+                  style="
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 9px;
+                    letter-spacing: 0.2em;
+                    text-transform: uppercase;
+                    color: var(--mu);
+                    margin-bottom: 5px;
+                  "
+                >
+                  MINIMALNA KWOTA NA INWESTYCJE FIRE
+                </div>
+                <div
+                  style="
+                    font-family: &quot;Lora&quot;, serif;
+                    font-size: 30px;
+                    font-weight: 600;
+                    color: var(--go);
+                  "
+                  id="mr1"
+                >
+                  —
+                </div>
+                <div style="font-size: 11px; color: var(--t2); margin-top: 2px">
+                  zł/mies. na inwestycje FIRE
+                </div>
+                <hr />
+                <div class="rg">
+                  <div class="ri">
+                    <div class="rl">Cel portfela (nom.)</div>
+                    <div class="rn" id="mr2">—</div>
+                  </div>
+                  <div class="ri">
+                    <div class="rl">IKE /mies.</div>
+                    <div class="rn" id="mr3">—</div>
+                  </div>
+                  <div class="ri">
+                    <div class="rl">Od 60 lat</div>
+                    <div class="rn" style="color: var(--go)" id="mr4">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAN FIRE -->
+        <div id="p-plan" class="panel">
+          <div class="ph">
+            <div class="pt">Plan FIRE</div>
+            <div class="ps">Twoja mapa drogowa do wolności finansowej</div>
+          </div>
+          <div id="plan-c">
+            <div class="al alg">
+              <div class="ali">⚙</div>
+              <div>
+                <div class="alt">Uzupełnij Budżet FIRE</div>
+                <div class="alb2">Wpisz miesięczną kwotę inwestycji.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AGENT AI -->
+        <div id="p-agent" class="panel">
+          <div class="ph">
+            <div class="pt">Agent AI</div>
+            <div class="ps">
+              Doradca finansowy — zna Twój portfel i plan FIRE na bieżąco
+            </div>
+          </div>
+          <div class="cw">
+            <div class="cm" id="chat-m">
+              <div class="msg a">
+                <div class="msl">FIRE Agent</div>
+                <div class="mb">
+                  Cześć! Znam Twój portfel, budżet i plan FIRE.<br /><br />Zapytaj
+                  o cokolwiek — optymalizację IKE, nadpłatę kredytu, co zrobić z
+                  premią, czy idę w dobrym kierunku?
+                </div>
+              </div>
+            </div>
+            <div class="cf">
+              <input
+                type="text"
+                class="ci"
+                id="ci"
+                placeholder="Zadaj pytanie..."
+                onkeydown="if (event.key === 'Enter') sChat();"
+              /><button class="cs2" id="csbtn" onclick="sChat()">
+                Wyślij →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- USTAWIENIA -->
+        <div id="p-ust" class="panel">
+          <div class="ph">
+            <div class="pt">Ustawienia</div>
+            <div class="ps">Parametry modelu i dane konta</div>
+          </div>
+          <div class="tc">
+            <div>
+              <div class="st" style="margin-bottom: 8px">Model FIRE</div>
+              <div class="card" style="margin-bottom: 12px">
+                <div class="ir">
+                  <span class="ik">Oczekiwany roczny zwrot brutto</span>
+                  <span class="iv">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s-brutto"
+                      style="width: 70px; padding: 4px 8px; text-align: right"
+                      oninput="
+                        normalizeComma(this);
+                        sS();
+                        rA();
+                      "
+                    />
+                    %
+                  </span>
+                </div>
+                <div class="ir">
+                  <span class="ik"
+                    >Oczekiwany roczny zwrot netto
+                    <span class="tip-wrap"
+                      ><span class="tip-ic">i</span
+                      ><span class="tip-box" id="netto-tip"
+                        >Wartość zakłada natychmiastową wypłatę. Przy trzymaniu
+                        inwestycji przez wiele lat bez sprzedaży, realny roczny
+                        zysk netto będzie wyższy dzięki odroczeniu podatku Belki
+                        na sam koniec.</span
+                      ></span
+                    >
+                  </span>
+                  <span class="iv" style="color: var(--gr)" id="s-netto-display"
+                    >—</span
+                  >
+                </div>
+                <div class="ir">
+                  <span class="ik"
+                    >Podstawa obliczeń planu FIRE
+                    <span class="tip-wrap"
+                      ><span class="tip-ic">i</span
+                      ><span class="tip-box"
+                        >Wybierz, czy plan FIRE (akumulacja poza IKE) liczyć na
+                        podstawie zwrotu brutto czy netto.
+                        <strong>Brutto</strong> zakłada brak podatku Belki w
+                        trakcie (np. ETF akumulujący trzymany bez sprzedaży).
+                        <strong>Netto</strong> zakłada coroczne potrącenie 19%
+                        Belki — bardziej konserwatywne podejście. IKE zawsze
+                        używa zwrotu brutto.</span
+                      ></span
+                    >
+                  </span>
+                  <span class="iv">
+                    <select
+                      class="fs"
+                      id="s-calc-base"
+                      style="width: auto; padding: 4px 8px"
+                      onchange="
+                        sS();
+                        rA();
+                      "
+                    >
+                      <option value="brutto">Zwrot brutto</option>
+                      <option value="netto">Zwrot netto</option>
+                    </select>
+                  </span>
+                </div>
+                <div class="ir">
+                  <span class="ik">Oczekiwany roczny zwrot (IKE)</span>
+                  <span class="iv">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s-ike-net-input"
+                      style="width: 70px; padding: 4px 8px; text-align: right"
+                      oninput="
+                        normalizeComma(this);
+                        sS();
+                        rA();
+                      "
+                    />
+                    %
+                  </span>
+                </div>
+                <div class="ir">
+                  <span class="ik">Podatek Belki</span>
+                  <span class="iv">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s-belka"
+                      style="width: 70px; padding: 4px 8px; text-align: right"
+                      oninput="
+                        normalizeComma(this);
+                        sS();
+                        rA();
+                      "
+                    />
+                    %
+                  </span>
+                </div>
+                <div class="ir">
+                  <span class="ik">Oczekiwana stopa inflacji</span>
+                  <span class="iv">
+                    <input
+                      class="fi"
+                      type="number"
+                      id="s-inf"
+                      style="width: 70px; padding: 4px 8px; text-align: right"
+                      oninput="
+                        normalizeComma(this);
+                        sS();
+                        rA();
+                      "
+                    />
+                    %
+                  </span>
+                </div>
+                <div class="ir" style="border: none">
+                  <span class="ik">SWR / reguła celu</span
+                  ><span class="iv">4% · 25×</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="st" style="margin-bottom: 8px">Konto</div>
+              <div class="card" style="margin-bottom: 12px">
+                <div class="ir">
+                  <span class="ik">Zalogowany</span
+                  ><span class="iv" id="s-em">—</span>
+                </div>
+                <div class="ir">
+                  <span class="ik">Baza danych</span
+                  ><span class="iv">Supabase (Frankfurt)</span>
+                </div>
+                <div class="ir">
+                  <span class="ik">Ceny krypto</span
+                  ><span class="iv">CoinGecko API · live w PLN</span>
+                </div>
+                <div class="ir">
+                  <span class="ik">Kursy walut (EUR/PLN, USD/PLN)</span
+                  ><span class="iv">open.er-api.com · przez Netlify</span>
+                </div>
+                <div class="ir" style="border: none">
+                  <span class="ik">Ceny ETF / akcji</span
+                  ><span class="iv"
+                    >Yahoo Finance · przez Netlify · odświeżane co 12h</span
+                  >
+                </div>
+              </div>
+              <button
+                class="btn bgh bsm"
+                onclick="refP(true)"
+                style="width: 100%; margin-bottom: 8px"
+              >
+                ↻ Wymuś odświeżenie cen
+              </button>
+              <button
+                class="btn bgh bsm"
+                onclick="
+                  dlgConfirm('Wylogować się?', '⏻', 'Wyloguj', 'Anuluj').then(
+                    (ok) => ok && doLogout(),
+                  )
+                "
+                style="width: 100%; margin-bottom: 8px"
+              >
+                ⏻ Wyloguj
+              </button>
+              <button
+                class="btn bsm"
+                style="
+                  background: var(--reb);
+                  border: 1px solid var(--rec);
+                  color: var(--re);
+                  width: 100%;
+                "
+                onclick="clearAll()"
+              >
+                🗑 Usuń wszystkie dane
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KREDYTY WEWNĘTRZNE -->
+        <div id="p-loans" class="panel">
+          <div class="ph">
+            <div class="pt">Kredyty wewnętrzne</div>
+            <div class="ps">
+              Pożyczki między kontami — nie wpływają na obliczenia FIRE
+            </div>
+          </div>
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              margin-bottom: 16px;
+              flex-wrap: wrap;
+            "
+          >
+            <button class="btn bp" onclick="openLoanModal()">
+              + Nowa pożyczka
+            </button>
+            <button class="btn bgh" onclick="openRepayModal()">✓ Spłata</button>
+          </div>
+          <div class="tb">
+            <button class="tbn on" id="lt-sum" onclick="swLT('sum')">
+              Podsumowanie
+            </button>
+            <button class="tbn" id="lt-hist" onclick="swLT('hist')">
+              Historia
+            </button>
+          </div>
+          <div id="lt-summary"><div class="tw" id="loans-sum-tbl"></div></div>
+          <div id="lt-history" style="display: none">
+            <div class="tw" id="loans-hist-tbl"></div>
+          </div>
+        </div>
+
+        <!-- LOAN MODAL -->
+        <div
+          class="mbg"
+          id="loan-modal"
+          onclick="if (event.target === this) closeLoanModal();"
+        >
+          <div class="modal">
+            <div class="mt">Nowa pożyczka</div>
+            <div class="ms">Pożyczka między kontami wewnętrznymi</div>
+            <div class="fg">
+              <label class="fl">Konto które pożycza (wierzyciel)</label>
+              <select class="fs" id="loan-from">
+                <option value="glowne">Konto główne</option>
+                <option value="inwestycyjne">Konto inwestycyjne</option>
+                <option value="awaryjne">Konto wydatków awaryjnych</option>
+                <option value="play-karoliny">Play Karoliny</option>
+                <option value="play-adriana">Play Adriana</option>
+                <option value="wakacje">Wspólne wakacje</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Konto które pożycza (dłużnik)</label>
+              <select class="fs" id="loan-to">
+                <option value="glowne">Konto główne</option>
+                <option value="inwestycyjne">Konto inwestycyjne</option>
+                <option value="awaryjne">Konto wydatków awaryjnych</option>
+                <option value="play-karoliny">Play Karoliny</option>
+                <option value="play-adriana">Play Adriana</option>
+                <option value="wakacje">Wspólne wakacje</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Kwota (zł)</label>
+              <div class="iu">
+                <input
+                  class="fi"
+                  type="number"
+                  id="loan-amt"
+                  placeholder="np. 500"
+                /><span class="iuv">zł</span>
+              </div>
+            </div>
+            <div class="fg" style="margin-bottom: 0">
+              <label class="fl">Opis (opcjonalnie)</label
+              ><input class="fi" id="loan-note" placeholder="np. Za obiad" />
+            </div>
+            <div class="ma">
+              <button class="btn bgh" onclick="closeLoanModal()">Anuluj</button
+              ><button class="btn bp" onclick="addLoan()">
+                Zapisz pożyczkę
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPAY MODAL -->
+        <div
+          class="mbg"
+          id="repay-modal"
+          onclick="if (event.target === this) closeRepayModal();"
+        >
+          <div class="modal">
+            <div class="mt">Spłata pożyczki</div>
+            <div class="ms">Zarejestruj spłatę całkowitą lub częściową</div>
+            <div class="fg">
+              <label class="fl">Konto dłużnika (spłaca)</label>
+              <select class="fs" id="rep-from">
+                <option value="glowne">Konto główne</option>
+                <option value="inwestycyjne">Konto inwestycyjne</option>
+                <option value="awaryjne">Konto wydatków awaryjnych</option>
+                <option value="play-karoliny">Play Karoliny</option>
+                <option value="play-adriana">Play Adriana</option>
+                <option value="wakacje">Wspólne wakacje</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Konto wierzyciela (otrzymuje)</label>
+              <select class="fs" id="rep-to">
+                <option value="glowne">Konto główne</option>
+                <option value="inwestycyjne">Konto inwestycyjne</option>
+                <option value="awaryjne">Konto wydatków awaryjnych</option>
+                <option value="play-karoliny">Play Karoliny</option>
+                <option value="play-adriana">Play Adriana</option>
+                <option value="wakacje">Wspólne wakacje</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Kwota spłaty (zł)</label>
+              <div class="iu">
+                <input
+                  class="fi"
+                  type="number"
+                  id="rep-amt"
+                  placeholder="np. 500"
+                /><span class="iuv">zł</span>
+              </div>
+            </div>
+            <div class="fg" style="margin-bottom: 0">
+              <label class="fl">Opis (opcjonalnie)</label
+              ><input
+                class="fi"
+                id="rep-note"
+                placeholder="np. Spłata za obiad"
+              />
+            </div>
+            <div class="ma">
+              <button class="btn bgh" onclick="closeRepayModal()">Anuluj</button
+              ><button class="btn bp" onclick="addRepay()">
+                Zapisz spłatę
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- CUSTOM DIALOG -->
+    <div class="dlg-bg" id="dlg-bg">
+      <div class="dlg" id="dlg-box">
+        <div class="dlg-icon" id="dlg-icon">⚠️</div>
+        <div class="dlg-title" id="dlg-title"></div>
+        <div class="dlg-msg" id="dlg-msg"></div>
+        <div class="dlg-btns" id="dlg-btns"></div>
+      </div>
+    </div>
+
+    <!-- LIABILITIES MODAL -->
+    <div
+      class="mbg"
+      id="liab-modal"
+      onclick="if (event.target === this) closeLiabModal();"
+    >
+      <div class="modal">
+        <div class="mt">Zobowiązanie</div>
+        <div class="ms">Kredyt lub inne zobowiązanie finansowe</div>
+        <div class="fg">
+          <label class="fl">Operacja</label>
+          <select class="fs" id="liab-op" onchange="onLiabOp()">
+            <option value="add">Dodaj zobowiązanie</option>
+            <option value="pay">Opłać zobowiązanie</option>
+          </select>
+        </div>
+        <div class="fg" id="liab-name-row">
+          <label class="fl">Nazwa (opcjonalnie)</label>
+          <input
+            class="fi"
+            id="liab-name"
+            placeholder="np. Kredyt hipoteczny"
+          />
+        </div>
+        <div class="fg" style="margin-bottom: 0">
+          <label class="fl">Kwota (zł)</label>
+          <div class="iu">
+            <input
+              class="fi"
+              type="number"
+              id="liab-amt"
+              placeholder="np. 500000"
+            /><span class="iuv">zł</span>
+          </div>
+        </div>
+        <div class="ma">
+          <button class="btn bgh" onclick="closeLiabModal()">Anuluj</button>
+          <button class="btn bp" onclick="saveLiab()">Zapisz</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NIER MANAGER MODAL -->
+    <div
+      class="mbg"
+      id="nier-modal"
+      onclick="if (event.target === this) closeNierModal();"
+    >
+      <div class="modal">
+        <div class="mt" id="nier-modal-title">Nieruchomości</div>
+        <div class="ms" id="nier-modal-sub">Zarządzaj nieruchomościami</div>
+        <div id="nier-list" style="margin-bottom: 12px"></div>
+        <button
+          class="btn bp bsm"
+          style="width: 100%; margin-bottom: 8px"
+          onclick="addNierFromModal()"
+        >
+          + Dodaj kolejną
+        </button>
+        <button
+          class="btn bgh bsm"
+          style="width: 100%"
+          onclick="closeNierModal()"
+        >
+          Zamknij
+        </button>
+      </div>
+    </div>
+
+    <!-- ASSET MODAL -->
+    <div class="mbg" id="am" onclick="if (event.target === this) closeAM();">
+      <div class="modal">
+        <div class="mt" id="am-title">Dodaj aktywo</div>
+        <div class="ms">Wpisz dane — wycena automatyczna</div>
+        <div class="fg" id="atype-row">
+          <label class="fl">Operacja</label>
+          <select class="fs" id="aop" style="margin-bottom: 8px">
+            <option value="buy">📥 Kupno / Wpłata</option>
+            <option value="sell">📤 Sprzedaż / Wypłata</option>
+          </select>
+          <label class="fl">Typ aktywa</label>
+          <select class="fs" id="atype" onchange="onTC()">
+            <optgroup label="ETF-y (XTB)">
+              <option value="etf:IS3N.DE">📊 MSCI EM IMI (IS3N.DE)</option>
+              <option value="etf:IGLN.UK">📊 Gold USD (IGLN.UK)</option>
+              <option value="etf:EUNL.DE">📊 MSCI World (EUNL.DE)</option>
+              <option value="etf:SXR8.DE">📊 S&amp;P 500 (SXR8.DE)</option>
+              <option value="etf:EGLN.UK">📊 Gold EUR (EGLN.UK)</option>
+              <option value="etf:OTHER">📊 Inny ETF (podaj ticker)</option>
+            </optgroup>
+            <optgroup label="Akcje">
+              <option value="stock:NVDA">📈 Nvidia (NVDA)</option>
+              <option value="stock:AAPL">📈 Apple (AAPL)</option>
+              <option value="stock:OTHER">📈 Inna akcja (podaj ticker)</option>
+            </optgroup>
+            <optgroup label="Kryptowaluty">
+              <option value="crypto:BTC">₿ Bitcoin (BTC)</option>
+              <option value="crypto:ETH">Ξ Ethereum (ETH)</option>
+              <option value="crypto:OTHER">🔵 Inne krypto</option>
+            </optgroup>
+            <optgroup label="Nieruchomości">
+              <option value="nier-sprzedaz:NIER">
+                🏠 Nieruchomość — wartość rynkowa
+              </option>
+              <option value="nier-wynajem:NIER">
+                🔑 Nieruchomość — wynajem
+              </option>
+            </optgroup>
+            <optgroup label="Inne">
+              <option value="manual:OBL">📜 Obligacje EDO</option>
+              <option value="manual:INNE">💵 Inne</option>
+            </optgroup>
+          </select>
+        </div>
+        <div id="atrow" class="fg" style="display: none">
+          <label class="fl">Ticker</label
+          ><input class="fi" id="atick" placeholder="np. VWCE.DE" />
+        </div>
+        <div id="aurow" class="fg">
+          <label class="fl" id="aulbl">Ilość jednostek</label
+          ><input class="fi" type="number" id="aunits" placeholder="np. 12.5" />
+        </div>
+        <div id="awynajem-row" class="fg" style="display: none">
+          <label class="fl">Kwota wynajmu brutto (zł/mies.)</label>
+          <input
+            class="fi"
+            type="number"
+            id="awynajem"
+            placeholder="np. 4200"
+          />
+          <div style="font-size: 10px; color: var(--mu); margin-top: 3px">
+            Brutto. Netto = brutto × 91,5% (ryczałt 8,5%). Wchodzi do celu FIRE
+            jako dochód pasywny przed 60 r.ż.
+          </div>
+        </div>
+        <div id="amrow" class="fg" style="display: none">
+          <label class="fl">Wartość rynkowa (zł)</label>
+          <input class="fi" type="number" id="amval" placeholder="np. 600000" />
+          <div style="font-size: 10px; color: var(--mu); margin-top: 3px">
+            Wchodzi do majątku netto. NIE wchodzi do portfela FIRE.
+          </div>
+        </div>
+        <div id="akonto-row" class="fg">
+          <label class="fl">Konto</label>
+          <select class="fs" id="akonto">
+            <option value="ike">🏦 IKE (bez Belki, dostępne od 60 r.ż.)</option>
+            <option value="poza">📈 Poza IKE (Belka 19%)</option>
+          </select>
+        </div>
+        <div id="acur-row" class="fg" style="display: none">
+          <label class="fl">Waluta notowania akcji</label>
+          <select class="fs" id="acur">
+            <option value="USD">USD (np. NYSE, NASDAQ)</option>
+            <option value="EUR">EUR (np. Xetra, Euronext)</option>
+            <option value="PLN">PLN (GPW Warszawa)</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom: 0">
+          <label class="fl">Nazwa (opcjonalnie)</label
+          ><input class="fi" id="anazwa" placeholder="np. Mieszkanie Kraków" />
+        </div>
+        <div class="ma">
+          <button class="btn bgh" onclick="closeAM()">Anuluj</button>
+          <button class="btn bp" id="am-save" onclick="saveAsset()">
+            Dodaj
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/helpers.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/prices-client.js"></script>
+  <script src="js/dialogs.js"></script>
+  <script src="js/tooltips.js"></script>
+  <script src="js/assets-table.js"></script>
+  <script src="js/assets-modal.js"></script>
+  <script src="js/liabilities.js"></script>
+  <script src="js/nier.js"></script>
+  <script src="js/loans.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/calculators.js"></script>
+  <script src="js/monthly.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/portfel-tabs.js"></script>
+  <script src="js/misc.js"></script>
+  <script src="js/init.js"></script>
+  </body>
+</html><!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f0f14" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>FIRE PLAN AK47 TEAM</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Lora:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+  <body>
+    <!-- LOGIN -->
+    <div class="login-scr" id="LS">
+      <div class="lb">
+        <div class="ll">FIRE AK47 TEAM</div>
+        <div class="lt">Twój plan do wolności finansowej</div>
+        <div class="lc">
+          <div class="lh">Zaloguj się</div>
+          <div class="lerr" id="lerr"></div>
+          <div class="fg">
+            <label class="fl">Email</label
+            ><input
+              class="fi"
+              type="email"
+              id="lem"
+              placeholder="twoj@email.com"
+              onkeydown="if (event.key === 'Enter') doLogin();"
+            />
+          </div>
+          <div class="fg">
+            <label class="fl">Hasło</label
+            ><input
+              class="fi"
+              type="password"
+              id="lpw"
+              placeholder="••••••••"
+              onkeydown="if (event.key === 'Enter') doLogin();"
+            />
+          </div>
+          <button class="lbtn" id="lbtn" onclick="doLogin()">
+            <span id="lbtxt">Zaloguj się</span>
+          </button>
+          <div class="lf">v15__1804</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="app" id="APP" style="display: none">
+      <aside class="sb">
+        <div class="sbl">
+          <div class="sbn">FIRE 🔥</div>
+          <div
+            style="
+              font-size: 10px;
+              font-weight: 700;
+              color: var(--go);
+              letter-spacing: 0.15em;
+              margin-top: 1px;
+            "
+          >
+            AK47 TEAM
+          </div>
+          <div class="sbv">Twój plan do wolności finansowej</div>
+        </div>
+        <nav class="nav">
+          <div class="ni on" onclick="gn('dash')">
+            <span class="nic">◈</span><span>Dashboard</span>
+          </div>
+          <div class="ni" onclick="gn('portfel')">
+            <span class="nic">💳</span><span>Portfel</span>
+          </div>
+          <div class="ni" onclick="gn('budzet')">
+            <span class="nic">🔥</span><span>Budżet FIRE</span>
+          </div>
+          <div class="ni" onclick="gn('budzet-dom')">
+            <span class="nic">🏠</span><span>Budżet domowy</span>
+          </div>
+          <div class="ni" onclick="gn('mies')">
+            <span class="nic">📅</span><span>Kalkulator domowy</span>
+          </div>
+          <div class="ni" onclick="gn('kalk')">
+            <span class="nic">🧮</span><span>Kalkulator FIRE</span>
+          </div>
+          <div class="ni" onclick="gn('plan')">
+            <span class="nic">📓</span><span>Plan FIRE</span>
+          </div>
+          <div class="ni" onclick="gn('agent')">
+            <span class="nic">✦</span><span>Agent AI</span>
+          </div>
+          <div class="ni" onclick="gn('loans')">
+            <span class="nic">🤝</span><span>Kredyty wewn.</span>
+          </div>
+          <div class="ni" onclick="gn('ust')">
+            <span class="nic">⚙</span><span>Ustawienia</span>
+          </div>
+        </nav>
+        <div class="sbb">
+          <div class="fml" style="font-size: 10px; margin-bottom: 5px">
+            Postęp do FIRE
+          </div>
+          <div class="fmb" style="height: 5px; margin-bottom: 5px">
+            <div class="fmf" id="sb-bar" style="width: 0%"></div>
+          </div>
+          <div class="fmp" style="font-size: 20px" id="sb-pct">0%</div>
+          <div
+            style="
+              font-family: &quot;JetBrains Mono&quot;, monospace;
+              font-size: 10px;
+              color: var(--mu);
+              margin-top: 3px;
+            "
+          >
+            Cel: <span id="sb-goal">—</span>
+          </div>
+        </div>
+        <div class="ub">
+          <div class="ua" id="ua">?</div>
+          <div class="ue" id="ue">—</div>
+          <button class="lobtn" onclick="doLogout()" title="Wyloguj">⏻</button>
+        </div>
+      </aside>
+      <!-- BOTTOM NAV -->
+      <div class="mov" id="mov" onclick="closeMore()"></div>
+      <div class="mm" id="mm">
+        <div
+          class="mmi"
+          id="mm-budzet-dom"
+          onclick="
+            gn('budzet-dom');
+            closeMore();
+          "
+        >
+          <span class="mmi-ic">🏠</span>Budżet domowy
+        </div>
+        <div
+          class="mmi"
+          id="mm-loans"
+          onclick="
+            gn('loans');
+            closeMore();
+          "
+        >
+          <span class="mmi-ic">💸</span>Kredyty wewn.
+        </div>
+        <div
+          class="mmi"
+          id="mm-mies"
+          onclick="
+            gn('mies');
+            closeMore();
+          "
+        >
+          <span class="mmi-ic">📅</span>Kalkulator domowy
+        </div>
+        <div
+          class="mmi"
+          id="mm-plan"
+          onclick="
+            gn('plan');
+            closeMore();
+          "
+        >
+          <span class="mmi-ic">▲</span>Plan FIRE
+        </div>
+        <div
+          class="mmi"
+          id="mm-agent"
+          onclick="
+            gn('agent');
+            closeMore();
+          "
+        >
+          <span class="mmi-ic">✦</span>Agent AI
+        </div>
+        <div
+          class="mmi"
+          id="mm-ust"
+          onclick="
+            gn('ust');
+            closeMore();
+          "
+        >
+          <span class="mmi-ic">⚙</span>Ustawienia
+        </div>
+      </div>
+      <nav class="bnav">
+        <div class="bni-w">
+          <div class="bni on" id="bn-dash" onclick="gn('dash')">
+            <span class="bni-ic">◈</span><span class="bni-lb">Home</span>
+          </div>
+          <div class="bni" id="bn-portfel" onclick="gn('portfel')">
+            <span class="bni-ic">◎</span><span class="bni-lb">Portfel</span>
+          </div>
+          <div class="bni" id="bn-budzet" onclick="gn('budzet')">
+            <span class="bni-ic">⊞</span><span class="bni-lb">Budżet</span>
+          </div>
+          <div class="bni" id="bn-kalk" onclick="gn('kalk')">
+            <span class="bni-ic">△</span><span class="bni-lb">Kalk.</span>
+          </div>
+          <div class="bni" id="bn-more" onclick="toggleMore()">
+            <span class="bni-ic" style="font-size: 12px; letter-spacing: 2px"
+              >•••</span
+            ><span class="bni-lb">Więcej</span>
+          </div>
+        </div>
+      </nav>
+      <main class="main">
+        <!-- DASHBOARD -->
+        <div id="p-dash" class="panel on">
+          <div
+            class="ph"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 10px;
+            "
+          >
+            <div>
+              <div class="pt">Dashboard</div>
+              <div class="ps" id="dd"></div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                flex-shrink: 0;
+              "
+            >
+              <span class="sd" id="sd"></span
+              ><span style="font-size: 11px; color: var(--t2)" id="pstat"
+                >—</span
+              >
+              <button class="btn bgh bsm" onclick="refP()">↻</button>
+            </div>
+          </div>
+          <div id="setup-b" class="al alg" style="display: none">
+            <div class="ali">👋</div>
+            <div>
+              <div class="alt">Uzupełnij dane żeby zobaczyć plan FIRE</div>
+              <div class="alb2">
+                Przejdź do <strong>Budżet FIRE</strong> i
+                <strong>Portfel</strong>.
+              </div>
+            </div>
+          </div>
+          <div
+            id="fire-achieved-banner"
+            class="al"
+            style="
+              display: none;
+              background: linear-gradient(
+                135deg,
+                rgba(212, 168, 67, 0.15),
+                rgba(240, 200, 102, 0.08)
+              );
+              border: 1px solid var(--goc);
+              margin-bottom: 14px;
+            "
+          >
+            <div class="ali" style="font-size: 24px">🔥</div>
+            <div style="flex: 1">
+              <div class="alt" style="font-size: 16px; color: var(--go)">
+                CEL FIRE OSIĄGNIĘTY — GRATULACJE! 🔥🎉🔥
+              </div>
+              <div class="alb2">
+                Twój portfel osiągnął cel FIRE. Wolność finansowa jest w Twoim
+                zasięgu!
+              </div>
+            </div>
+          </div>
+          <!-- ROW 1: desktop 4 cols, mobile 2+2 -->
+          <div class="dash-row1">
+            <div class="card">
+              <div class="ct" style="background: var(--go)"></div>
+              <div class="cl">Wiek FIRE</div>
+              <div class="cv go" id="kw">—</div>
+              <div class="cs" id="kr">Uzupełnij Budżet FIRE</div>
+            </div>
+            <div class="card">
+              <div class="ct" style="background: var(--bl)"></div>
+              <div class="cl">Postęp do FIRE</div>
+              <div class="cv bl" id="kf">0%</div>
+              <div class="cs">Cel: <span id="kg">—</span></div>
+            </div>
+            <div class="card">
+              <div class="ct" style="background: var(--pu)"></div>
               <div class="cl">Cel wypłaty FIRE</div>
               <div class="cv go" id="k-cel-real-val">— zł/mies.</div>
               <div class="cs" id="k-cel-nom-sub"></div>
