@@ -10,6 +10,24 @@ function syncSl() {
   sv("s2", Math.round(p.ike) || "");
   sv("s3", p.start || "");
 }
+
+function _simFromState(overrides = {}) {
+  return {
+    wynajemNetto: getWynajemNetto(),
+    ikeStrat: S.ikeStrat || "stop",
+    ikePostInvA: pf(S.ikePostInvA),
+    ikePostInvB1: pf(S.ikePostInvB1),
+    ikePostInvB2: pf(S.ikePostInvB2),
+    ikePostInvC: pf(S.ikePostInvC),
+    ikePostInvD1: pf(S.ikePostInvD1),
+    ikePostInvD2: pf(S.ikePostInvD2),
+    i1Limit: pf(S.i1) || 26019,
+    i2Limit: pf(S.i2) || 26019,
+    invInf: S.invInf === "1",
+    ...overrides,
+  };
+}
+
 function cM() {
   const inv = pf(g("s1")?.value),
     ike = pf(g("s2")?.value),
@@ -17,31 +35,15 @@ function cM() {
     wy = pf(g("s4")?.value) || 15000;
   const wiek = pf(S.wt) || 31,
     iS = gIKE();
-  // clear hint labels
-  sT2("sv1", "");
-  sT2("sv2", "");
-  sT2("sv3", "");
-  sT2("sv4", "");
-  if (!inv) {
-    return;
-  }
-  const r = sim({
-    inv,
-    ike,
-    start: st,
-    iS,
-    wy,
-    wiek,
-    wynajemNetto: getWynajemNetto(),
-    ikeStrat: S.ikeStrat || "stop",
-    ikePostInv: pf(S.ikePostInv),
-    invInf: S.invInf === "1",
-  });
+
+  sT2("sv1", ""); sT2("sv2", ""); sT2("sv3", ""); sT2("sv4", "");
+  if (!inv) return;
+
+  const r = sim({ inv, ike, start: st, iS, wy, wiek, ..._simFromState() });
 
   sT2("r1", Math.round(r.fa) + " lat");
   sT2("r2", "" + Math.round(r.fy));
 
-  // Cel z i bez inflacji
   const celBezInf = wy * 12 * 25;
   sT2("r3", PLN(r.G));
   const r3r = g("r3-real");
@@ -51,15 +53,11 @@ function cM() {
   sT2("r4b", PLN(r.iF));
   sT2("r6", PLN(r.m60) + "/mies.");
 
-  // Sprawdzenie czy poza IKE wystarczy
   const latDo60 = Math.max(0, 60 - r.fa);
   const poza = g("r-poza-check");
   if (poza) {
     if (latDo60 > 0) {
-      // Szacunkowa potrzeba: pełne nominalne wypłaty przez latDo60 lat (uproszczenie — bez odsetek)
       const potrzeba = r.wyAtFIRE * latDo60 * 12;
-      // Zielone gdy poza IKE pokrywa co najmniej 100% potrzeb (symulacja w modelu gwarantuje pokrycie,
-      // ale ten wskaźnik pokazuje margines bezpieczeństwa)
       const ok = r.pF >= potrzeba;
       poza.innerHTML = `<span style="color:${ok ? "var(--gr)" : "var(--go)"}">${ok ? "✓" : "⚠"}</span> Poza IKE musi pokryć ${Math.round(latDo60)} lat wypłat do 60. r.ż. · szacunkowo ${PLN(potrzeba)} nominalnie (bez odsetek)`;
     } else poza.innerHTML = "";
@@ -71,9 +69,9 @@ function cM() {
     <div class="pb" style="border-color:var(--rec)"><div class="pbn">Faza 2 — Wypłaty</div><div class="pbt" style="color:var(--re)">FIRE → 60 r.ż.</div><div class="pbr"><span>Tylko poza IKE</span><span>${PLN(r.pF)}</span></div><div class="pbr"><span>IKE rośnie</span><span>${PLN(r.iF)}</span></div></div>
     <div class="pb" style="border-color:var(--grc)"><div class="pbn">Faza 3 — IKE wolne</div><div class="pbt" style="color:var(--gr)">Po 60 r.ż.</div><div class="pbr"><span>IKE</span><span>${PLN(r.i60)}</span></div><div class="pbr"><span>Łącznie/mies.</span><span style="color:var(--gr)">${PLN(r.m60)}</span></div></div>
   </div>`;
+
   const y = Math.round(r.yr);
-  sT2(
-    "ri",
+  sT2("ri",
     y <= 10
       ? `Świetne tempo! FIRE za ${y} lat w wieku ${Math.round(r.fa)} lat.`
       : y <= 20
@@ -81,59 +79,31 @@ function cM() {
         : `Każde +1 000 zł/mies. skraca horyzont o ~1.5–2 lata.`,
   );
 }
+
 function cMin() {
   const wt = pf(g("ms1")?.value) || 50,
     wy = pf(g("ms2")?.value) || 15000,
     wiek = pf(S.wt) || 31;
-  sT2("msv1", "");
-  sT2("msv2", "");
-  if (wt <= wiek) {
-    sT2("mr1", "Niemożliwe");
-    return;
-  }
+  sT2("msv1", ""); sT2("msv2", "");
+  if (wt <= wiek) { sT2("mr1", "Niemożliwe"); return; }
+
   const ty = wt - wiek,
     start = gFirePortfel(),
     iS = gIKE(),
     ike = getIKEM();
-  let lo = 500,
-    hi = 200000,
-    found = hi;
+  let lo = 500, hi = 200000, found = hi;
   for (let i = 0; i < 40; i++) {
     const mid = (lo + hi) / 2;
-    const r = sim({
-      inv: mid,
-      ike,
-      start,
-      iS,
-      wy,
-      wiek,
-      wynajemNetto: getWynajemNetto(),
-      ikeStrat: S.ikeStrat || "stop",
-      ikePostInv: pf(S.ikePostInv),
-      invInf: S.invInf === "1",
-    });
-    if (r.yr <= ty) {
-      found = mid;
-      hi = mid;
-    } else lo = mid;
+    const r = sim({ inv: mid, ike, start, iS, wy, wiek, ..._simFromState() });
+    if (r.yr <= ty) { found = mid; hi = mid; } else lo = mid;
   }
-  const r = sim({
-    inv: found,
-    ike,
-    start,
-    iS,
-    wy,
-    wiek,
-    wynajemNetto: getWynajemNetto(),
-    ikeStrat: S.ikeStrat || "stop",
-    ikePostInv: pf(S.ikePostInv),
-    invInf: S.invInf === "1",
-  });
+  const r = sim({ inv: found, ike, start, iS, wy, wiek, ..._simFromState() });
   sT2("mr1", PLN(Math.ceil(found / 500) * 500));
   sT2("mr2", PLN(r.G));
   sT2("mr3", PLN(ike) + "/mies.");
   sT2("mr4", PLN(r.m60) + "/mies.");
 }
+
 function swCT(t) {
   ["m", "min"].forEach((x) => {
     const d = g("ck-" + x);
@@ -146,8 +116,7 @@ function swCT(t) {
 
 function cWyp() {
   const kw = pf(g("wyp-kwota")?.value);
-  const p1 = +g("wyp-s1").value,
-    p2 = +g("wyp-s2").value;
+  const p1 = +g("wyp-s1").value, p2 = +g("wyp-s2").value;
   const p3 = Math.max(0, 100 - p1 - p2);
   sT2("wyp-sv1", p1 + "%");
   sT2("wyp-sv2", p2 + "%");
@@ -160,9 +129,7 @@ function cWyp() {
     el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--mu);font-size:12px">Wpisz kwotę do rozliczenia</div>`;
     return;
   }
-  const wak = (kw * p1) / 100,
-    wyd = (kw * p2) / 100,
-    inv = (kw * p3) / 100;
+  const wak = (kw * p1) / 100, wyd = (kw * p2) / 100, inv = (kw * p3) / 100;
   const firePlan = pf(S.inv) || 0;
   const fireMatch =
     inv >= firePlan && firePlan > 0
