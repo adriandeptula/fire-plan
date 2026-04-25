@@ -344,3 +344,37 @@ Kolumna w Supabase to `wynajem_kwota` (LUB `wynajem` — fallback). Przy `loadDB
 | v15 | Strategie IKE: stop + cont (zastąpione przez v16) |
 | v15 | Kafelki "Portfel poza IKE przy FIRE" i "Portfel IKE przy FIRE" |
 | v15 | Ustawienia: slidery → inputy liczbowe, osobne pole IKE rate |
+
+---
+
+## Pułapka: podwójny `<body>` tag w index.html
+
+Oryginalny `index.html` miał dwa tagi `<body>` pod rząd:
+```html
+<body>
+  <body>
+    <!-- LOGIN -->
+```
+
+Przeglądarka naprawia to automatycznie, ale przy każdej edycji pliku przez Claude należy sprawdzić czy nie powstał duplikat. Objaw: JS się nie ładuje, aplikacja nie działa, ekran logowania nie reaguje.
+
+**Weryfikacja:**
+```bash
+grep -c '<body' index.html   # powinno zwrócić 1
+```
+
+**Fix:** usuń dodatkowy `<body>` — zostaw tylko jeden, tuż po `</head>`.
+
+---
+
+## Pułapka: misc.js clearAll — musi zawierać WSZYSTKIE klucze S
+
+Przy każdym dodaniu nowego pola do obiektu `S` (w `state.js`) **trzeba też dodać to pole w `clearAll()` w `misc.js`**. W przeciwnym razie po "Usuń wszystkie dane" stare wartości mogą zostać w pamięci i powodować błędy symulacji.
+
+Aktualna lista kluczy IKE po FIRE w `S` i `clearAll`:
+```
+ikeStrat, ikePostInvA, ikePostInvB1, ikePostInvB2,
+ikePostInvC, ikePostInvD1, ikePostInvD2, invInf
+```
+
+**Stary bug:** `ikePostInv: "0"` — zastąpiony przez 6 osobnych pól (A/B1/B2/C/D1/D2).
