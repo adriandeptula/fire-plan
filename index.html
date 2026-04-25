@@ -16,6 +16,49 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      /* Portfel w wieku 60 lat — desktop jedna linia, mobile stos */
+      .p60-layout {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .p60-main {
+        flex: 1;
+      }
+      .p60-sep {
+        width: 1px;
+        background: var(--b2);
+        align-self: stretch;
+        flex-shrink: 0;
+      }
+      .p60-breakdown {
+        display: flex;
+        gap: 28px;
+        flex-shrink: 0;
+      }
+      .p60-item {
+        text-align: right;
+      }
+      @media (max-width: 768px) {
+        .p60-layout {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+        }
+        .p60-sep {
+          width: 100%;
+          height: 1px;
+          align-self: auto;
+        }
+        .p60-breakdown {
+          justify-content: space-between;
+        }
+        .p60-item {
+          text-align: left;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- LOGIN -->
@@ -335,22 +378,31 @@
           <!-- ROW 2b: Portfel w wieku 60 lat -->
           <div class="card" style="margin-bottom: 11px; border-color: var(--grc)">
             <div class="ct" style="background: var(--gr)"></div>
-            <div class="cl">Portfel w wieku 60 lat — łącznie
-              <span class="tip-wrap"><span class="tip-ic">i</span><span class="tip-box">Wartość portfela po odblokowaniu IKE — suma portfela poza IKE i IKE po fazie wypłat (FIRE → 60 r.ż.). Wartości nominalne (przyszłe złotówki).</span></span>
-            </div>
-            <div class="cv go" id="k-p60-total">— zł</div>
-            <div class="cs" id="k-p60-wyp-real"></div>
-            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mu); margin-bottom: 3px;">Poza IKE</div>
-                <div style="font-family: 'Lora', serif; font-size: 16px; font-weight: 600; color: var(--bl);" id="k-p60-poza">— zł</div>
+            <!-- Desktop: jedna linia | Mobile: stos -->
+            <div class="p60-layout">
+              <!-- Lewa: łącznie -->
+              <div class="p60-main">
+                <div class="cl">Portfel w wieku 60 lat — łącznie
+                  <span class="tip-wrap"><span class="tip-ic">i</span><span class="tip-box">Wartość portfela po odblokowaniu IKE — suma portfela poza IKE i IKE po fazie wypłat (FIRE → 60 r.ż.). Wartości nominalne (przyszłe złotówki).</span></span>
+                </div>
+                <div class="cv go" id="k-p60-total">— zł</div>
+                <div class="cs" id="k-p60-wyp-real" style="margin-top:3px"></div>
+                <div style="font-size: 11px; color: var(--mu); margin-top: 3px;" id="k-p60-wyp-nom"></div>
               </div>
-              <div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mu); margin-bottom: 3px;">IKE</div>
-                <div style="font-family: 'Lora', serif; font-size: 16px; font-weight: 600; color: var(--gr);" id="k-p60-ike">— zł</div>
+              <!-- Separator (desktop only) -->
+              <div class="p60-sep"></div>
+              <!-- Prawa: breakdown -->
+              <div class="p60-breakdown">
+                <div class="p60-item">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--mu);margin-bottom:4px">Poza IKE</div>
+                  <div style="font-family:'Lora',serif;font-size:20px;font-weight:600;color:var(--bl)" id="k-p60-poza">— zł</div>
+                </div>
+                <div class="p60-item">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--mu);margin-bottom:4px">IKE</div>
+                  <div style="font-family:'Lora',serif;font-size:20px;font-weight:600;color:var(--gr)" id="k-p60-ike">— zł</div>
+                </div>
               </div>
             </div>
-            <div style="font-size: 11px; color: var(--mu); margin-top: 6px;" id="k-p60-wyp-nom"></div>
           </div>
           <!-- ROW 3: desktop 3 cols (zadłużenia gdy > 0), mobile 2 cols + full-width zadłużenia -->
           <div class="dash-row4">
