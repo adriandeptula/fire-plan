@@ -16,9 +16,16 @@ const SM = {
   "s-brutto": "brutto",
   "s-belka": "belka",
   "s-inf": "inf",
-  "ike-post-inv": "ikePostInv",
   "s-ike-net-input": "ikeRate",
+  // IKE po FIRE — nowe pola
+  "ike-post-inv-a":  "ikePostInvA",
+  "ike-post-inv-b1": "ikePostInvB1",
+  "ike-post-inv-b2": "ikePostInvB2",
+  "ike-post-inv-c":  "ikePostInvC",
+  "ike-post-inv-d1": "ikePostInvD1",
+  "ike-post-inv-d2": "ikePostInvD2",
 };
+
 function colS() {
   Object.entries(SM).forEach(([id, k]) => {
     const e = g(id);
@@ -31,6 +38,7 @@ function colS() {
   const cb2 = g("s-calc-base");
   if (cb2) S.calcBase = cb2.value;
 }
+
 function apS() {
   Object.entries(SM).forEach(([id, k]) => {
     const e = g(id);
@@ -47,48 +55,54 @@ function apS() {
   uIkeStrat();
   uIkeNetDisplay();
 }
+
 function uIP() {
   const v = g("bikep")?.value || 100;
   const e = g("ikepl");
   if (e) e.textContent = v + "%";
 }
+
 function uPI() {
   const w = pf(g("bpw")?.value) || 10,
     r = pf(g("bpr")?.value) || 10;
   const e = g("bpi");
   if (e) e.value = Math.max(0, 100 - w - r);
 }
+
 function uIkeStrat() {
   const v = g("ike-strategy")?.value || "stop";
-  const row = g("ike-cont-row");
-  if (row) row.style.display = v === "cont" ? "block" : "none";
+  const rows = ["A", "B", "C", "D"];
+  rows.forEach(x => {
+    const el = g("ike-strat-" + x);
+    if (el) el.style.display = v === x ? "block" : "none";
+  });
   const info = g("ike-strat-info");
-  if (info)
-    info.textContent =
-      v === "cont"
-        ? "Model zakłada kontynuację wpłat na IKE z zewnętrznego źródła nawet po przejściu na FIRE. Portfel poza IKE nadal musi pokryć wypłaty do 60. roku życia."
-        : "Model wymaga, aby portfel poza IKE samodzielnie pokrył wszystkie wypłaty do 60. roku życia. IKE rośnie w tym czasie bez wypłat.";
+  if (!info) return;
+  const msgs = {
+    stop: "IKE rośnie samodzielnie przez cały okres do 60. roku życia bez żadnych dodatkowych wpłat. Portfel poza IKE pokrywa wypłaty.",
+    A: "Kwota roczna pochodzi z portfela poza IKE — zmniejsza dostępny kapitał na wypłaty do 60. r.ż. IKE rośnie szybciej dzięki dodatkowym wpłatom.",
+    B: "Procent aktualnego limitu IKE (indeksowanego o inflację co rok) pochodzi z portfela poza IKE. System automatycznie liczy rosnący limit.",
+    C: "Wpłaty na IKE finansowane są ze źródła zewnętrznego (praca dorywcza, wynajem itp.) — nie zmniejszają portfela FIRE. Idealny scenariusz.",
+    D: "Procent limitu IKE ze źródła zewnętrznego. Limit rośnie co roku o inflację. Portfel FIRE pozostaje nienaruszony przez wpłaty na IKE.",
+  };
+  info.textContent = msgs[v] || msgs.stop;
 }
+
 function uIkeNetDisplay() {
   const brutto = pf(g("s-brutto")?.value) || 7;
   const belka = (pf(g("s-belka")?.value) || 19) / 100;
   const netto = brutto * (1 - belka);
-  // Display netto read-only
   const el = g("s-netto-display");
   if (el) el.textContent = netto.toFixed(2) + "%/rok";
-  // Update netto tooltip
   const tip = g("netto-tip");
   if (tip && netto > 0)
     tip.textContent = `Wartość ${netto.toFixed(2)}% zakłada natychmiastową wypłatę. Przy trzymaniu inwestycji przez wiele lat bez sprzedaży, realny roczny zysk netto będzie wyższy dzięki odroczeniu podatku Belki na sam koniec.`;
-  // IKE rate label in portfel
   const ikeRate = pf(g("s-ike-net-input")?.value) || 7;
   const pr = g("port-ike-rate");
   if (pr) pr.textContent = ikeRate.toFixed(1);
   const pp = g("port-poza-rate");
   if (pp) pp.textContent = netto.toFixed(2);
-  // legacy id support
   const oldIkeNet = g("s-ike-net");
   if (oldIkeNet)
-    oldIkeNet.textContent =
-      ikeRate.toFixed(1) + "%/rok (brutto, bez Belki)";
+    oldIkeNet.textContent = ikeRate.toFixed(1) + "%/rok (brutto, bez Belki)";
 }
