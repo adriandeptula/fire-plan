@@ -9,9 +9,8 @@ IKE: 2 konta · brak podatku Belki · dostępne od 60 r.ż. Strategia po FIRE: {
 Cel wypłaty dziś: {{WY}} zł/mies. → nominalnie przy FIRE: {{WYNOM}} zł/mies.
 Mów po polsku, podawaj liczby, max 3-4 akapity, konkretne rekomendacje.`;
 
-// Maksymalna liczba wiadomości w historii (user+assistant pary)
-// Zapobiega przekroczeniu limitu tokenów Anthropic
 const CHAT_MAX_PAIRS = 10;
+const WORKER_URL = "https://fire-chat.adrianxdeptula.workers.dev";
 
 async function sChat() {
   const inp = g("ci"),
@@ -28,12 +27,10 @@ async function sChat() {
   msgs.innerHTML += `<div class="msg a" id="${tid}"><div class="msl">FIRE Agent</div><div class="mb"><div class="th"><span></span><span></span><span></span></div></div></div>`;
   msgs.scrollTop = msgs.scrollHeight;
 
-  // Ogranicz historię do ostatnich CHAT_MAX_PAIRS par — zapobiega błędom tokenów
   if (chatH.length > CHAT_MAX_PAIRS * 2) {
     chatH = chatH.slice(-(CHAT_MAX_PAIRS * 2));
   }
 
-  // Dodaj wiadomość użytkownika DO historii dopiero teraz
   chatH.push({ role: "user", content: text });
 
   const p = gP(),
@@ -47,7 +44,17 @@ async function sChat() {
     wiek = pf(S.wt) || 31,
     wf2 = pf(S.wf) || 50;
   const wyNom = wy * Math.pow(1 + inf / 100, Math.max(0, wf2 - wiek));
-  const sys = SYS.replace("{{W}}", S.wt || 31)
+
+  const stratDesc = {
+    stop: "brak wpłat po FIRE — IKE rośnie samodzielnie",
+    A: `opcja A: z portfela poza IKE, stała kwota ${f(pf(S.ikePostInvA))} zł/rok`,
+    B: `opcja B: z portfela poza IKE, ${pf(S.ikePostInvB1)}% IKE1 + ${pf(S.ikePostInvB2)}% IKE2 (indeksowane inflacją)`,
+    C: `opcja C: ze źródła zewnętrznego, stała kwota ${f(pf(S.ikePostInvC))} zł/rok`,
+    D: `opcja D: ze źródła zewnętrznego, ${pf(S.ikePostInvD1)}% IKE1 + ${pf(S.ikePostInvD2)}% IKE2 (indeksowane inflacją)`,
+  };
+
+  const sys = SYS
+    .replace("{{W}}", S.wt || 31)
     .replace("{{WF}}", S.wf || 50)
     .replace("{{P}}", f(gFirePortfel()))
     .replace("{{I}}", f(gIKE()))
@@ -65,26 +72,18 @@ async function sChat() {
     .replace("{{NE}}", ne)
     .replace("{{INF}}", inf)
     .replace("{{BK}}", bk)
-    .replace(
-      "{{STRAT}}",
-      S.ikeStrat === "cont"
-        ? `kontynuacja wpłat ${f(pf(S.ikePostInv))} zł/mies.`
-        : "brak wpłat po FIRE",
-    )
+    .replace("{{STRAT}}", stratDesc[S.ikeStrat || "stop"] || "brak wpłat po FIRE")
     .replace("{{WY}}", f(wy))
     .replace("{{WYNOM}}", f(wyNom));
 
   try {
-    const workerUrl = "https://fire-chat.TWOJ-SUBDOMAIN.workers.dev";
-    const res = await fetch(workerUrl, {
+    const res = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system: sys, messages: chatH }),
     });
 
     if (!res.ok) {
-      // Usuń ostatnią wiadomość użytkownika z historii — inaczej następne
-      // zapytanie będzie miało dwie kolejne wiadomości user/user co powoduje błąd 400
       chatH.pop();
       let errDetail = `HTTP ${res.status}`;
       try { const errData = await res.json(); errDetail = errData.error || errDetail; } catch {}
@@ -96,14 +95,13 @@ async function sChat() {
     chatH.push({ role: "assistant", content: reply });
     g(tid).querySelector(".mb").innerHTML = reply.replace(/\n/g, "<br>");
   } catch (e) {
-    // Jeśli pop() nie był jeszcze wywołany (błąd sieci przed !res.ok), usuń teraz
     if (chatH.length > 0 && chatH[chatH.length - 1].role === "user") {
       chatH.pop();
     }
     const isNetworkError = e instanceof TypeError;
     const hint = isNetworkError
-      ? "Sprawdź czy Worker <strong>fire-chat</strong> jest wdrożony w Cloudflare."
-      : `Błąd: ${e.message}. Sprawdź czy klucz <strong>ANTHROPIC_KEY</strong> jest ustawiony w Cloudflare → Worker fire-chat → Settings → Variables.`;
+      ? `Błąd sieci — sprawdź czy Worker <strong>fire-chat.adrianxdeptula.workers.dev</strong> jest aktywny.`
+      : `Błąd: ${e.message}. Sprawdź klucz <strong>ANTHROPIC_KEY</strong> w Cloudflare → Workers → fire-chat → Settings → Variables.`;
     g(tid).querySelector(".mb").innerHTML =
       `<span style="color:var(--re)">${hint}</span>`;
   }
