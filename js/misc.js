@@ -37,7 +37,12 @@ async function clearAll() {
     ikeRate: "7.0",
     calcBase: "brutto",
     ikeStrat: "stop",
-    ikePostInv: "0",
+    ikePostInvA: "0",
+    ikePostInvB1: "0",
+    ikePostInvB2: "0",
+    ikePostInvC: "0",
+    ikePostInvD1: "0",
+    ikePostInvD2: "0",
     invInf: "0",
   };
   await saveA();
