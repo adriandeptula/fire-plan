@@ -1,16 +1,4 @@
 // ── STATE ──
-// Cały mutowalny stan aplikacji w zmiennych globalnych.
-// A           → lista aktywów (assets) — obiekt: {id,type,ticker,units,mv,wynajem,konto,n,cur}
-// S           → ustawienia użytkownika (settings) — synchronizowane z Supabase
-// H           → historia miesięczna kalkulatora domowego (history)
-// portHistory → historia transakcji portfela (ograniczona do 500 wpisów)
-// loans       → transakcje kredytów wewnętrznych
-// liabilities → zobowiązania (kredyty hipoteczne itp.)
-// incs        → tymczasowe źródła dochodu w kalkulatorze miesięcznym
-// prices      → cache cen z API {ticker: cena, EURPLN, USDPLN}
-// chatH       → historia rozmowy z Agentem AI
-// user        → zalogowany użytkownik Supabase
-// sT          → timer debounce dla saveSettings
 let A = [],
   S = {
     wt: "31",
@@ -35,8 +23,14 @@ let A = [],
     inf: "3.5",
     ikeRate: "7.0",
     calcBase: "brutto",
+    // IKE po FIRE — nowe 4 opcje (A/B/C/D) + stop
     ikeStrat: "stop",
-    ikePostInv: "0",
+    ikePostInvA: "0",   // A: roczna kwota z portfela poza IKE
+    ikePostInvB1: "0",  // B: % limitu IKE konto 1 z portfela poza IKE
+    ikePostInvB2: "0",  // B: % limitu IKE konto 2 z portfela poza IKE
+    ikePostInvC: "0",   // C: roczna kwota ze źródła zewnętrznego
+    ikePostInvD1: "0",  // D: % limitu IKE konto 1 ze źródła zewnętrznego
+    ikePostInvD2: "0",  // D: % limitu IKE konto 2 ze źródła zewnętrznego
     invInf: "0",
   },
   H = [],
