@@ -378,3 +378,19 @@ ikePostInvC, ikePostInvD1, ikePostInvD2, invInf
 ```
 
 **Stary bug:** `ikePostInv: "0"` — zastąpiony przez 6 osobnych pól (A/B1/B2/C/D1/D2).
+
+---
+
+## Zasada: style tylko w css/styles.css
+
+**Nigdy nie dodawaj `<style>` bloków bezpośrednio w `index.html`.** Wszystkie style CSS należą do `css/styles.css` — to jedyne miejsce na reguły CSS w projekcie.
+
+Przy każdej zmianie wizualnej:
+1. Edytuj `css/styles.css`
+2. Używaj istniejących zmiennych CSS (`var(--go)`, `var(--gr)`, `var(--b2)` itd.)
+3. Dla responsywności dodawaj reguły wewnątrz istniejącego bloku `@media (max-width: 768px)` na końcu pliku
+
+**Weryfikacja po zmianie:**
+```bash
+grep -c '<style' index.html   # powinno zwrócić 0
+```
