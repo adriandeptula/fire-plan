@@ -16,49 +16,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/styles.css" />
-    <style>
-      /* Portfel w wieku 60 lat — desktop jedna linia, mobile stos */
-      .p60-layout {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-      .p60-main {
-        flex: 1;
-      }
-      .p60-sep {
-        width: 1px;
-        background: var(--b2);
-        align-self: stretch;
-        flex-shrink: 0;
-      }
-      .p60-breakdown {
-        display: flex;
-        gap: 28px;
-        flex-shrink: 0;
-      }
-      .p60-item {
-        text-align: right;
-      }
-      @media (max-width: 768px) {
-        .p60-layout {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 10px;
-        }
-        .p60-sep {
-          width: 100%;
-          height: 1px;
-          align-self: auto;
-        }
-        .p60-breakdown {
-          justify-content: space-between;
-        }
-        .p60-item {
-          text-align: left;
-        }
-      }
-    </style>
   </head>
   <body>
     <!-- LOGIN -->
