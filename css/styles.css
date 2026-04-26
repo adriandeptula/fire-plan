@@ -1558,3 +1558,49 @@ input[type="number"] {
     display: none;
   }
 }
+/* PORTFEL W WIEKU 60 LAT — desktop 3 równe kolumny, mobile stos */
+.p60-layout {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr 1fr;
+  align-items: center;
+  gap: 0;
+}
+.p60-main {
+  padding-right: 20px;
+}
+.p60-sep {
+  background: var(--b2);
+  align-self: stretch;
+  width: 1px;
+}
+.p60-breakdown {
+  display: contents;
+}
+.p60-item {
+  padding-left: 20px;
+  text-align: left;
+}
+@media (max-width: 768px) {
+  .p60-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .p60-main {
+    padding-right: 0;
+  }
+  .p60-sep {
+    width: 100%;
+    height: 1px;
+    align-self: auto;
+  }
+  .p60-breakdown {
+    display: flex;
+    justify-content: space-between;
+  }
+  .p60-item {
+    padding-left: 0;
+    text-align: left;
+  }
+}
