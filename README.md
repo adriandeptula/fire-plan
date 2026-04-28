@@ -53,16 +53,26 @@ Co miesiąc:
   Opcjonalnie: wpłata rośnie o inflację co rok
 ```
 
-Symulacja kończy się gdy portfel ≥ cel nominalny ORAZ portfel poza IKE wystarczy na wypłaty do 60. r.ż.
+Symulacja kończy się gdy portfel ≥ cel FIRE ORAZ portfel poza IKE wystarczy na wypłaty do 60. r.ż. ORAZ m60 ≥ cel.
+
+**Cel portfela (G):**
+```
+G = (cel_wypłaty - wynajem_netto) × 12 × 25 × (1+inf)^yr
+```
+Wynajem netto dynamicznie redukuje wymagany cel — portfel musi pokryć tylko różnicę między celem a dochodem z wynajmu. Usunięcie wynajmu automatycznie zwiększa G i przesuwa datę FIRE.
 
 ### Faza 2: Wolność finansowa (wiek FIRE → 60 lat)
 
 ```
 Co miesiąc:
-  Portfel poza IKE rośnie o stopę zwrotu
-  Wypłacasz cel_wypłaty_nominalny / 12 (minus dochód z wynajmu)
+  inflFactor = (1+inf)^rok_od_FIRE
+  wypłata_z_portfela = (cel_nominalny_FIRE - wynajem_netto) × inflFactor
+  wynajem_netto rośnie z inflacją — realna siła nabywcza zachowana
+  Portfel poza IKE rośnie o stopę zwrotu, wypłata rośnie z inflacją
   IKE rośnie samodzielnie (lub z wpłatami wg wybranej strategii)
 ```
+
+**Kluczowe:** wypłaty rosną z inflacją co rok, żeby utrzymać tę samą siłę nabywczą przez całą fazę 2.
 
 ### Faza 3: Od 60. roku życia (IKE odblokowane)
 
