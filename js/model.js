@@ -71,28 +71,29 @@ function sim({
     m = 0,
     cm = -1;
 
-  // Sprawdź warunek FIRE PRZED pętlą
+  // Sprawdź warunek FIRE PRZED pętlą (portfel startowy może już wystarczyć)
   let alreadyFire = false;
   {
     const wyNow = wy;
-    // G zredukowane o wynajem — portfel musi pokryć tylko różnicę
-    const GNow = Math.max(0, wyNow - wynajemNetto) * 12 * 25;
-    if (pI + pP >= GNow) {
+    const potrzebaBase = Math.max(0, wyNow - wynajemNetto);
+    // Trigger oparty wyłącznie na pP — IKE jest zablokowane do 60. r.ż.
+    // i nie może pokryć wypłat w fazie 2; sprawdzamy czy pP uniesie fazę 2 samodzielnie
+    if (potrzebaBase === 0 || pP >= potrzebaBase) {
       const latDo60 = Math.max(0, 60 - wiek);
       let pPtest = pP;
       let pItest = pI;
       let wystarczy = true;
       for (let mm = 0; mm < latDo60 * 12; mm++) {
         const inflFactor = Math.pow(1 + inf, Math.floor(mm / 12));
-        // potrzebaM rośnie z inflacją — utrzymujemy realną siłę nabywczą
-        const potrzebaM = Math.max(0, wyNow - wynajemNetto) * inflFactor;
+        // Wypłata rośnie z inflacją — utrzymujemy realną siłę nabywczą
+        const potrzebaM = potrzebaBase * inflFactor;
         const { monthly: ikeM, fromCapital } = calcIkePostFire({ ...ikeArgs, inflFactor });
         pItest = pItest * (1 + MRI) + ikeM;
         const totalOut = potrzebaM + (fromCapital ? ikeM : 0);
         pPtest = pPtest * (1 + MRP) - totalOut;
         if (pPtest < 0) { wystarczy = false; break; }
       }
-      // Weryfikacja: czy w wieku 60 lat 4% portfela łącznego + wynajem (nominalny) pokrywa cel?
+      // Weryfikacja: czy w wieku 60 lat 4% portfela łącznego + wynajem (nominalny) ≥ cel?
       if (wystarczy) {
         const inflAt60 = Math.pow(1 + inf, latDo60);
         const wynajemAt60 = wynajemNetto * inflAt60;
@@ -117,10 +118,10 @@ function sim({
 
     const latDoFIRE = yr;
     const wyNom = wy * Math.pow(1 + inf, latDoFIRE);
-    // G zredukowane o wynajem (oboje indeksowane inflacją w tym samym momencie)
+    // G = cel portfela do UI / CoastFIRE — poza IKE musi pokryć tylko różnicę wy - wynajem
     const G = Math.max(0, wy - wynajemNetto) * Math.pow(1 + inf, latDoFIRE) * 12 * 25;
 
-    // CoastFIRE check
+    // CoastFIRE check (używa G jako celu poglądowego)
     if (cm === -1) {
       const annualReturn = (pf(S.brutto) || 7) / 100;
       const latDoFIRETarget = Math.max(0, (pf(S.wf) || 50) - wiek);
@@ -128,23 +129,24 @@ function sim({
       if (rem > 0 && pI + pP >= G / Math.pow(1 + annualReturn, rem)) cm = m;
     }
 
-    // Warunek FIRE
-    if (pI + pP >= G) {
+    // Warunek FIRE — trigger oparty wyłącznie na pP, nie na pI + pP
+    const potrzebaBase = Math.max(0, wyNom - wynajemNetto);
+    if (potrzebaBase === 0 || pP >= potrzebaBase) {
       const latDo60 = Math.max(0, 60 - wiekTeraz);
       let pPtest = pP;
       let pItest = pI;
       let wystarczy = true;
       for (let mm = 0; mm < latDo60 * 12; mm++) {
         const inflFactor = Math.pow(1 + inf, Math.floor(mm / 12));
-        // potrzebaM rośnie z inflacją — utrzymujemy realną siłę nabywczą
-        const potrzebaM = Math.max(0, wyNom - wynajemNetto) * inflFactor;
+        // Wypłata rośnie z inflacją — utrzymujemy realną siłę nabywczą
+        const potrzebaM = potrzebaBase * inflFactor;
         const { monthly: ikeM, fromCapital } = calcIkePostFire({ ...ikeArgs, inflFactor });
         pItest = pItest * (1 + MRI) + ikeM;
         const totalOut = potrzebaM + (fromCapital ? ikeM : 0);
         pPtest = pPtest * (1 + MRP) - totalOut;
         if (pPtest < 0) { wystarczy = false; break; }
       }
-      // Weryfikacja: czy w wieku 60 lat 4% portfela łącznego + wynajem (nominalny) pokrywa cel?
+      // Weryfikacja: czy w wieku 60 lat 4% portfela łącznego + wynajem (nominalny) ≥ cel?
       if (wystarczy) {
         const inflAt60 = Math.pow(1 + inf, latDo60);
         const wynajemAt60 = wynajemNetto * inflAt60;
@@ -161,14 +163,14 @@ function sim({
     fy = new Date().getFullYear() + yr;
   const cy = cm > 0 ? Math.round(new Date().getFullYear() + cm / 12) : null;
   const wyAtFIRE = wy * Math.pow(1 + inf, yr);
-  // G zredukowane o wynajem — spójne z warunkiem FIRE w pętli
+  // G tylko do UI (pasek postępu, kafelki) — zredukowane o wynajem
   const G = Math.max(0, wy - wynajemNetto) * Math.pow(1 + inf, yr) * 12 * 25;
   const infTotal = Math.pow(1 + inf, yr) - 1;
 
   // Symulacja po FIRE — faza 2: od FIRE do 60. r.ż.
   const y60 = Math.max(0, 60 - fa);
   let i60 = pI, p60 = pP;
-  // Baza wypłaty z portfela (bez wynajmu) — będzie indeksowana inflacją wewnątrz pętli
+  // Baza wypłaty z portfela (bez wynajmu) — indeksowana inflacją wewnątrz pętli
   const portWithdrawBase = Math.max(0, wyAtFIRE - wynajemNetto);
 
   for (let mm = 0; mm < y60 * 12; mm++) {
@@ -182,7 +184,7 @@ function sim({
     if (p60 < 0) p60 = 0;
   }
 
-  // Wynajem nominalny w wieku 60 lat (indeksowany inflacją od dziś)
+  // Wynajem nominalny w wieku 60 lat (indeksowany inflacją od daty FIRE)
   const wynajemAt60 = wynajemNetto * Math.pow(1 + inf, y60);
   const m60 = ((i60 + p60) * 0.04) / 12 + wynajemAt60;
 
