@@ -49,30 +49,28 @@
 Co miesiąc:
   Portfel IKE   = IKE   × (1 + 7%/12) + wpłata_IKE
   Portfel poza  = poza  × (1 + 7%/12) + wpłata_poza
-  
   Opcjonalnie: wpłata rośnie o inflację co rok
 ```
 
-Symulacja kończy się gdy portfel ≥ cel FIRE ORAZ portfel poza IKE wystarczy na wypłaty do 60. r.ż. ORAZ m60 ≥ cel.
+**Trigger FIRE:** symulacja kończy się gdy `poza IKE` (bez IKE!) uniesie fazę 2 samodzielnie ORAZ m60 ≥ cel. IKE jest zablokowane do 60. r.ż. i nie wchodzi do triggera.
 
-**Cel portfela (G):**
+**Cel portfela do UI (G):**
 ```
 G = (cel_wypłaty - wynajem_netto) × 12 × 25 × (1+inf)^yr
 ```
-Wynajem netto dynamicznie redukuje wymagany cel — portfel musi pokryć tylko różnicę między celem a dochodem z wynajmu. Usunięcie wynajmu automatycznie zwiększa G i przesuwa datę FIRE.
+Wynajem dynamicznie redukuje G — portfel musi pokryć tylko różnicę między celem a dochodem z wynajmu.
 
 ### Faza 2: Wolność finansowa (wiek FIRE → 60 lat)
 
 ```
 Co miesiąc:
   inflFactor = (1+inf)^rok_od_FIRE
-  wypłata_z_portfela = (cel_nominalny_FIRE - wynajem_netto) × inflFactor
+  wypłata_z_portfela = (wyAtFIRE - wynajem_netto) × inflFactor  ← rośnie z inflacją!
   wynajem_netto rośnie z inflacją — realna siła nabywcza zachowana
-  Portfel poza IKE rośnie o stopę zwrotu, wypłata rośnie z inflacją
   IKE rośnie samodzielnie (lub z wpłatami wg wybranej strategii)
 ```
 
-**Kluczowe:** wypłaty rosną z inflacją co rok, żeby utrzymać tę samą siłę nabywczą przez całą fazę 2.
+Efektywna stopa wypłaty z `poza IKE` jest wyższa niż 4% bo IKE jest zamrożone — to jest prawidłowe zachowanie modelu.
 
 ### Faza 3: Od 60. roku życia (IKE odblokowane)
 
