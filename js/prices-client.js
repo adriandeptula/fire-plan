@@ -8,7 +8,10 @@ function sPT(ok, m) {
   if (d) d.style.background = ok ? "var(--gr)" : "var(--re)";
 }
 function getETFCur(ticker) {
-  // London Stock Exchange tickers (.L or .UK) - iShares on LSE trade in USD (like IGLN, EGLN)
+  // Wyjątki per-ticker — mają priorytet nad logiką suffixu
+  const EUR_TICKERS = ["EGLN.UK", "EGLN.L"];
+  if (EUR_TICKERS.includes(ticker)) return "EUR";
+  // LSE tickers (.L lub .UK) — iShares na LSE notowane w USD
   if (ticker.endsWith(".L") || ticker.endsWith(".UK")) return "USD";
   return "EUR";
 }
@@ -66,11 +69,19 @@ async function refP(force = false) {
         if (d[id]) prices[t] = d[id].pln;
       });
     }
+    // Yahoo Finance używa .L dla LSE — konwertujemy .UK → .L przed wysłaniem,
+    // mapujemy wyniki z powrotem na oryginalne klucze .UK
+    const ukToL = {}; // { "IGLN.L": "IGLN.UK" }
     const mktTickers = [
       ...new Set(
-        A.filter((a) => a.type === "etf" || a.type === "stock").map(
-          (a) => a.ticker,
-        ),
+        A.filter((a) => a.type === "etf" || a.type === "stock").map((a) => {
+          if (a.ticker.endsWith(".UK")) {
+            const lTicker = a.ticker.replace(/\.UK$/, ".L");
+            ukToL[lTicker] = a.ticker;
+            return lTicker;
+          }
+          return a.ticker;
+        }),
       ),
     ];
     const r2 = await fetch(
@@ -78,7 +89,11 @@ async function refP(force = false) {
     );
     if (r2.ok) {
       const d2 = await r2.json();
-      Object.assign(prices, d2);
+      // Przywróć oryginalne klucze .UK w obiekcie prices
+      Object.entries(d2).forEach(([k, v]) => {
+        const origKey = ukToL[k] || k;
+        prices[origKey] = v;
+      });
       if (d2._cur_fallback) {
         sPT(
           false,
