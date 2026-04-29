@@ -157,23 +157,42 @@ sim({
 
 ### Logika warunków FIRE
 
-Symulacja kończy się gdy JEDNOCZEŚNIE:
-1. `pI + pP >= G` gdzie `G = (wy - wynajemNetto) × (1+inf)^yr × 12 × 25` — portfel pokrywa tylko tę część celu, której wynajem nie pokrywa (oboje indeksowane inflacją)
-2. `pP wystarczy na wypłaty do 60. r.ż.` — wypłaty rosną z inflacją wewnątrz subsymulacji
-3. `m60check >= wyAt60` — portfel w wieku 60 lat generuje ≥ cel (z uwzględnieniem indeksowanego wynajmu)
+**Trigger FIRE oparty wyłącznie na `pP` (poza IKE)** — IKE jest zablokowane do 60. r.ż. i nie może pokryć wypłat w fazie 2:
 
-### Faza 2: Wypłaty z portfela (FIRE → 60 r.ż.)
-
-```
-Co miesiąc:
-  inflFactor = (1+inf)^rok          // inflacja narastająca od daty FIRE
-  portWithdraw = (wyAtFIRE - wynajemNetto) × inflFactor   // rośnie z inflacją!
-  wynajemNetto rośnie z inflacją — pokrywa coraz więcej celu
-  IKE rośnie samodzielnie (lub z wpłatami wg strategii)
-  p60 = p60 × (1+MRP) - portWithdraw - ikeM_fromCapital
+```javascript
+// FIRE odpala się gdy pP uniesie fazę 2 samodzielnie:
+const potrzebaBase = Math.max(0, wyNom - wynajemNetto);
+if (potrzebaBase === 0 || pP >= potrzebaBase) { ...subsymulacja... }
 ```
 
-**Kluczowe:** zarówno wypłaty z portfela jak i wynajem są indeksowane inflacją, aby utrzymać realną siłę nabywczą przez całą fazę 2.
+**`G` jest wyłącznie do UI** (pasek postępu, kafelki) i CoastFIRE — nie decyduje o FIRE:
+```javascript
+G = (wy - wynajemNetto) × (1+inf)^yr × 12 × 25
+```
+
+Subsymulacja (faza 2 test) kończy się gdy JEDNOCZEŚNIE:
+1. `pP` nie zejdzie do zera przed 60. r.ż. — wypłaty rosną z inflacją wewnątrz pętli
+2. `m60check >= wyAt60` — w wieku 60 lat: `4% × (pPtest + pItest) / 12 + wynajemAt60 ≥ wyNom × inflAt60`
+
+### Stopy zwrotu
+
+- `getMRI_IKE()` → brutto/12 (IKE — bez Belki zawsze)
+- `getMRP()` → brutto/12 (tryb brutto) lub brutto*(1-Belka)/12 (tryb netto)
+
+### Faza 2: wypłaty z poza IKE (FIRE → 60. r.ż.)
+
+Efektywna stopa wypłaty z `poza IKE` jest **wyższa niż 4%** bo IKE jest zamrożone:
+```
+portWithdraw = (wyAtFIRE - wynajemNetto) × inflFactor  ← rośnie z inflacją co rok
+```
+Wynajem też rośnie z inflacją. W ten sposób realna siła nabywcza jest stała przez całą fazę 2.
+
+### Faza 3: IKE odblokowane (od 60. r.ż.)
+
+```
+m60 = (p60 + i60) × 4% / 12 + wynajemNetto × (1+inf)^y60
+```
+Wynajem indeksowany do poziomu 60. roku życia.
 
 ---
 
@@ -346,10 +365,11 @@ Kolumna w Supabase to `wynajem_kwota` (LUB `wynajem` — fallback). Przy `loadDB
 
 | Wersja | Zmiana |
 |--------|--------|
-| v17 | Fix: G = (wy - wynajemNetto) × 25 × 12 — wynajem dynamicznie redukuje cel FIRE |
-| v17 | Fix: wypłaty w fazie 2 indeksowane inflacją (utrzymanie realnej siły nabywczej) |
-| v17 | Fix: wynajem indeksowany inflacją w fazie 2, m60 i subsymulacjach FIRE check |
-| v17 | Fix: pItest w subsymulacjach + m60check weryfikuje cel po 60. r.ż. |
+| v17 | **BREAKING:** Trigger FIRE oparty wyłącznie na pP (poza IKE), nie pI+pP — IKE nie może pokryć wypłat w fazie 2 |
+| v17 | G zredukowane o wynajemNetto: `(wy-wynajem)×25×12×inflacja` — G wyłącznie do UI |
+| v17 | Wypłaty w fazie 2 indeksowane inflacją (`portWithdrawBase × inflFactor`) |
+| v17 | Wynajem indeksowany inflacją w fazie 2, m60 i subsymulacjach |
+| v17 | pItest w subsymulacjach + m60check weryfikuje cel po 60. r.ż. |
 | v16 | 4 strategie IKE po FIRE (A/B/C/D + stop), fix ikePostInv roczna vs miesięczna |
 | v16 | Nowy kafelek Dashboard: "Portfel w wieku 60 lat" (poza IKE + IKE + łącznie) |
 | v16 | Wszystkie kwoty dash: wartość dziś (realna) + nominalna poniżej |
