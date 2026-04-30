@@ -44,7 +44,8 @@ function cM() {
   sT2("r1", Math.round(r.fa) + " lat");
   sT2("r2", "" + Math.round(r.fy));
 
-  const celBezInf = wy * 12 * 25;
+  // Cel bez inflacji — portfel musi pokryć tylko różnicę (wynajem redukuje)
+  const celBezInf = Math.max(0, wy - getWynajemNetto()) * 12 * 25;
   sT2("r3", PLN(r.G));
   const r3r = g("r3-real");
   if (r3r) r3r.textContent = `${PLN(celBezInf)} bez inflacji`;
@@ -57,7 +58,8 @@ function cM() {
   const poza = g("r-poza-check");
   if (poza) {
     if (latDo60 > 0) {
-      const potrzeba = r.wyAtFIRE * latDo60 * 12;
+      // Szacunkowa kwota do pokrycia z poza IKE — wynajem redukuje wypłaty
+      const potrzeba = Math.max(0, r.wyAtFIRE - getWynajemNetto()) * latDo60 * 12;
       const ok = r.pF >= potrzeba;
       poza.innerHTML = `<span style="color:${ok ? "var(--gr)" : "var(--go)"}">${ok ? "✓" : "⚠"}</span> Poza IKE musi pokryć ${Math.round(latDo60)} lat wypłat do 60. r.ż. · szacunkowo ${PLN(potrzeba)} nominalnie (bez odsetek)`;
     } else poza.innerHTML = "";
