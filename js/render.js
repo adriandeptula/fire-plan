@@ -47,8 +47,10 @@ function rDash() {
   const r = getCachedSim();
   const realYrsToFire = r ? r.yr : Math.max(0, (pf(S.wf) || 50) - wiek);
   const wyNom = wy * Math.pow(1 + inf, realYrsToFire);
-  const G = wyNom * 12 * 25;
-  const fp = fireP > 0 ? Math.min(100, (fireP / G) * 100) : 0;
+  // G spójne z sim() — wynajem redukuje cel portfela
+  const wynajemNettoNow = getWynajemNetto();
+  const G = Math.max(0, wy - wynajemNettoNow) * Math.pow(1 + inf, realYrsToFire) * 12 * 25;
+  const fp = G > 0 ? Math.min(100, (fireP / G) * 100) : 0;
   const infPct = ((Math.pow(1 + inf, realYrsToFire) - 1) * 100).toFixed(1);
 
   // Zobowiązania
@@ -198,7 +200,8 @@ function rPlan() {
   }
   const r = getCachedSim(), fY = Math.round(r.fy), fA = Math.round(r.fa), now = new Date().getFullYear();
   const infPct = (r.infTotal * 100).toFixed(1);
-  const celDzis = pf(S.wy) * 12 * 25;
+  // Cel w cenach dziś — portfel musi pokryć tylko różnicę (wynajem redukuje)
+  const celDzis = Math.max(0, pf(S.wy) - getWynajemNetto()) * 12 * 25;
   const wiek = pf(S.wt) || 31;
   const m60Dzis = r.m60 / Math.pow(1 + getINF(), Math.max(0, 60 - wiek));
 
