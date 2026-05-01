@@ -14,6 +14,7 @@ function gn(id) {
     "mies",
     "kalk",
     "plan",
+    "wykres",
     "agent",
     "loans",
     "ust",
@@ -29,11 +30,12 @@ function gn(id) {
     portfel: "portfel",
     budzet: "budzet",
     kalk: "kalk",
+    wykres: "wykres",
   };
   const bn = g("bn-" + (bnMap[id] || ""));
   if (bn) bn.classList.add("on");
   else g("bn-more")?.classList.add("on");
-  ["budzet-dom", "loans", "mies", "plan", "agent", "ust"].forEach((m) => {
+  ["budzet-dom", "loans", "mies", "plan", "agent", "ust", "wykres"].forEach((m) => {
     const e = g("mm-" + m);
     if (e) e.classList.toggle("on", m === id);
   });
@@ -42,6 +44,7 @@ function gn(id) {
   if (id === "budzet") rBud();
   if (id === "budzet-dom") cWyp();
   if (id === "loans") rLoans();
+  if (id === "wykres") rWykres();
   rA();
 }
 function toggleMore() {
