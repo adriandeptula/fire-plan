@@ -49,6 +49,10 @@
           <button class="lbtn" id="lbtn" onclick="doLogin()">
             <span id="lbtxt">Zaloguj się</span>
           </button>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace">
+            <input type="checkbox" id="incog-check" style="width:14px;height:14px;accent-color:var(--go);cursor:pointer" />
+            Zaloguj w trybie incognito (ukryte wartości)
+          </label>
           <div class="lf">v15__1804</div>
         </div>
       </div>
@@ -93,6 +97,9 @@
           <div class="ni" onclick="gn('plan')">
             <span class="nic">📓</span><span>Plan FIRE</span>
           </div>
+          <div class="ni" onclick="gn('wykres')">
+            <span class="nic">📈</span><span>Wykres</span>
+          </div>
           <!-- <div class="ni" onclick="gn('agent')">
             <span class="nic">✦</span><span>Agent AI</span>
           </div> -->
@@ -125,6 +132,7 @@
         <div class="ub">
           <div class="ua" id="ua">?</div>
           <div class="ue" id="ue">—</div>
+          <button id="incog-btn" class="lobtn" onclick="toggleIncognito()" title="Włącz tryb incognito" style="font-size:14px">👁</button>
           <button class="lobtn" onclick="doLogout()" title="Wyloguj">⏻</button>
         </div>
       </aside>
@@ -170,6 +178,16 @@
           "
         >
           <span class="mmi-ic">▲</span>Plan FIRE
+        </div>
+        <div
+          class="mmi"
+          id="mm-wykres"
+          onclick="
+            gn('wykres');
+            closeMore();
+          "
+        >
+          <span class="mmi-ic">📈</span>Wykres portfela
         </div>
         <div
           class="mmi"
@@ -1351,6 +1369,29 @@
           </div>
         </div>
 
+        <!-- WYKRES PORTFELA -->
+        <div id="p-wykres" class="panel">
+          <div class="ph">
+            <div class="pt">Wykres portfela</div>
+            <div class="ps">Projekcja wartości portfela przez cały horyzont inwestycyjny</div>
+          </div>
+          <div class="card" style="overflow:visible;position:relative">
+            <div id="chart-wrap"></div>
+          </div>
+          <div class="al alb" style="margin-top:11px">
+            <div class="ali">ℹ</div>
+            <div>
+              <div class="alt">Jak czytać wykres</div>
+              <div class="alb2">
+                <strong style="color:var(--go)">Łącznie</strong> = suma obu portfeli w każdym roku.
+                <strong style="color:var(--bl)">Poza IKE</strong> rośnie podczas akumulacji, spada podczas wypłat (FIRE → 60 lat), potem stabilizuje się.
+                <strong style="color:var(--gr)">IKE</strong> rośnie przez cały czas — dostępne bez podatku Belki od 60. roku życia.
+                Po 60. roku życia wypłaty 4%/rok z łącznego portfela.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- PLAN FIRE -->
         <div id="p-plan" class="panel">
           <div class="ph">
@@ -1944,6 +1985,7 @@
   <script src="js/monthly.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/chart.js"></script>
   <script src="js/portfel-tabs.js"></script>
   <script src="js/misc.js"></script>
   <script src="js/init.js"></script>

@@ -180,6 +180,7 @@ async function saveAsset() {
     });
     await saveA();
     closeAM();
+    rA();
     try {
       localStorage.removeItem(PRICE_CACHE_KEY);
     } catch (e) {}
@@ -230,6 +231,7 @@ async function saveAsset() {
   if (portHistory.length > 500) portHistory = portHistory.slice(-500);
   await saveA();
   closeAM();
+  rA();
   try {
     localStorage.removeItem(PRICE_CACHE_KEY);
   } catch (e) {}

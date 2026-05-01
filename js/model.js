@@ -121,12 +121,15 @@ function sim({
     // G = cel portfela do UI / CoastFIRE — poza IKE musi pokryć tylko różnicę wy - wynajem
     const G = Math.max(0, wy - wynajemNetto) * Math.pow(1 + inf, latDoFIRE) * 12 * 25;
 
-    // CoastFIRE check (używa G jako celu poglądowego)
+    // CoastFIRE check: czy portfel urośnie do celu bez dalszych wpłat?
+    // Używa G przy DOCELOWYM wieku FIRE (stały cel), nie G bieżącego kroku
     if (cm === -1) {
       const annualReturn = (pf(S.brutto) || 7) / 100;
       const latDoFIRETarget = Math.max(0, (pf(S.wf) || 50) - wiek);
       const rem = Math.max(0, latDoFIRETarget - m / 12);
-      if (rem > 0 && pI + pP >= G / Math.pow(1 + annualReturn, rem)) cm = m;
+      // G_fire: cel portfela wyrażony w cenach przy docelowym wieku FIRE
+      const G_fire = Math.max(0, wy - wynajemNetto) * Math.pow(1 + inf, latDoFIRETarget) * 12 * 25;
+      if (rem > 0 && pI + pP >= G_fire / Math.pow(1 + annualReturn, rem)) cm = m;
     }
 
     // Warunek FIRE — trigger oparty wyłącznie na pP, nie na pI + pP

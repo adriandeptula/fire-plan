@@ -32,6 +32,7 @@ function _rAImmediate() {
   cWyp();
   uIP();
   uPI();
+  if (g('p-wykres')?.classList.contains('on')) rWykres();
 }
 
 // ── DASH ──

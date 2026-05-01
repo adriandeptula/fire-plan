@@ -90,8 +90,10 @@ async function saveA() {
         ticker: a.ticker,
         units: a.units,
         manual_val: a.mv,
+        wynajem_kwota: a.wynajem || 0,
         konto: a.konto,
         nazwa: a.n,
+        cur: a.cur || null,
       }));
       const { error } = await sb.from("assets").insert(rows);
       if (error) console.warn("saveA insert failed:", error.message);
