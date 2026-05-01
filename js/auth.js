@@ -20,6 +20,11 @@ async function doLogin() {
     g("lbtxt").textContent = "Zaloguj się";
     return;
   }
+  // Zapisz preferencję trybu incognito z formularza logowania
+  try {
+    const incogChk = g('incog-check');
+    if (incogChk) localStorage.setItem('fire-incognito', incogChk.checked ? '1' : '0');
+  } catch(e2) {}
   user = data.user;
   await onLogin();
 }
@@ -78,6 +83,7 @@ async function onLogin() {
   g("ua").textContent = user.email[0].toUpperCase();
   g("ue").textContent = user.email;
   g("s-em").textContent = user.email;
+  initIncognito();
   await loadDB();
   await refP();
   initTooltips();
