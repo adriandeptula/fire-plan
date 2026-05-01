@@ -1604,3 +1604,71 @@ input[type="number"] {
     text-align: left;
   }
 }
+
+/* ── INCOGNITO MODE ── */
+body.incognito #kw,
+body.incognito #kr,
+body.incognito #ki,
+body.incognito #kf,
+body.incognito #kg,
+body.incognito #kp,
+body.incognito #kps,
+body.incognito #kn,
+body.incognito #kk,
+body.incognito #kk-m,
+body.incognito #k-cel-nom-sub,
+body.incognito #k-cel-real,
+body.incognito #k60-real,
+body.incognito #k60-nom-sub,
+body.incognito #k-poza-fire,
+body.incognito #k-ike-fire,
+body.incognito #k-p60-total,
+body.incognito #k-p60-poza,
+body.incognito #k-p60-ike,
+body.incognito #k-p60-wyp-nom,
+body.incognito #k-p60-wyp-real,
+body.incognito #sb-bar,
+body.incognito #sb-pct,
+body.incognito #sb-goal,
+body.incognito #dt,
+body.incognito #at,
+body.incognito #pt,
+body.incognito #pike,
+body.incognito #ppoza,
+body.incognito #p-extra,
+body.incognito #plan-c,
+body.incognito #chart-wrap,
+body.incognito #ike-prev,
+body.incognito #port-hist-tbl,
+body.incognito #loans-sum-tbl,
+body.incognito #loans-hist-tbl,
+body.incognito #liab-list-wrap,
+body.incognito .fmf,
+body.incognito .fmp,
+body.incognito #bwy-nom {
+  filter: blur(8px) !important;
+  user-select: none !important;
+  pointer-events: none !important;
+  transition: filter 0.25s;
+}
+
+/* Incognito badge in sidebar */
+.incog-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(90,88,120,0.2);
+  border: 1px solid rgba(90,88,120,0.4);
+  color: var(--mu);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+body.incognito .incog-badge {
+  background: rgba(212,168,67,0.12);
+  border-color: rgba(212,168,67,0.3);
+  color: var(--go);
+}

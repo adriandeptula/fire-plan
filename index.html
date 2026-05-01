@@ -49,6 +49,10 @@
           <button class="lbtn" id="lbtn" onclick="doLogin()">
             <span id="lbtxt">Zaloguj się</span>
           </button>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace">
+            <input type="checkbox" id="incog-check" style="width:14px;height:14px;accent-color:var(--go);cursor:pointer" />
+            Zaloguj w trybie incognito (ukryte wartości)
+          </label>
           <div class="lf">v15__1804</div>
         </div>
       </div>
@@ -128,6 +132,7 @@
         <div class="ub">
           <div class="ua" id="ua">?</div>
           <div class="ue" id="ue">—</div>
+          <button id="incog-btn" class="lobtn" onclick="toggleIncognito()" title="Włącz tryb incognito" style="font-size:14px">👁</button>
           <button class="lobtn" onclick="doLogout()" title="Wyloguj">⏻</button>
         </div>
       </aside>
