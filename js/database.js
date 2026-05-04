@@ -61,14 +61,21 @@ async function loadDB() {
   rA();
 }
 
-// Zapisuje aktywa do Supabase.
-// Strategia: upsert aktualnych wierszy, potem pobierz ID z bazy
-// i usun te ktorych nie ma juz w A[]. Bezpieczne — nie uzywamy
-// delete-all ktore niszczylo dane gdy insert zawioedl.
+// Zapisuje A[] do Supabase.
+// Oryginalny pattern (delete + insert) przywrocony — upsert powodowal problemy
+// z politikami RLS w Supabase. Fix wzgledem oryginalu: blad insertu teraz
+// rzuca wyjatek (throw) zamiast tylko logowac — setSS("er") sie wywoluje
+// i dane sa ponownie pobierane z bazy zeby przywrocic poprawny stan UI.
 async function saveA() {
   if (!user) return;
   setSS("sy");
   try {
+    const { error: delErr } = await sb
+      .from("assets")
+      .delete()
+      .eq("user_id", user.id);
+    if (delErr) throw new Error("Delete failed: " + delErr.message);
+
     if (A.length) {
       const rows = A.map((a) => ({
         id: a.id,
@@ -82,35 +89,21 @@ async function saveA() {
         nazwa: a.n,
         cur: a.cur || null,
       }));
-      const { error } = await sb
-        .from("assets")
-        .upsert(rows, { onConflict: "id" });
-      if (error) throw new Error(error.message);
-    }
-
-    // Usun wiersze ktore nie sa juz w A[] — pobieramy ID z bazy
-    // i uzywamy .in() (bezpieczny, sprawdzony filtr w supabase-js)
-    const { data: existing } = await sb
-      .from("assets")
-      .select("id")
-      .eq("user_id", user.id);
-    if (existing) {
-      const currentIds = new Set(A.map((a) => a.id));
-      const toDelete = existing.map((r) => r.id).filter((id) => !currentIds.has(id));
-      if (toDelete.length) {
-        await sb.from("assets").delete().in("id", toDelete);
-      }
+      const { error: insErr } = await sb.from("assets").insert(rows);
+      if (insErr) throw new Error("Insert failed: " + insErr.message);
     }
 
     setSS("ok");
   } catch (e) {
-    console.warn("saveA error:", e);
+    console.error("saveA error:", e.message);
     setSS("er");
+    // Przywroc stan z bazy — lokalny A[] moze byc niezsynchronizowany
+    await loadDB();
   }
 }
 
-// Debounced zapis ustawien — uzyj dla zmian inputow (onChange, oninput).
-// UWAGA: await sS() nie czeka na faktyczny zapis do Supabase (setTimeout 800ms).
+// Debounced zapis ustawien (800ms) — uzyj dla zmian inputow.
+// UWAGA: await sS() nie czeka na faktyczny zapis do Supabase.
 async function sS() {
   colS();
   if (!user) return;
