@@ -51,6 +51,14 @@ async function loadDB() {
         });
         delete d._wynajemMap;
       }
+      // Migracja: jesli _curMap istnieje w starych danych, przywroc cur i usun
+      if (d._curMap) {
+        d._curMap.forEach(([id, cur]) => {
+          const asset = A.find((a) => a.id === id);
+          if (asset && !asset.cur) asset.cur = cur;
+        });
+        delete d._curMap;
+      }
       S = { ...S, ...d };
       apS();
     }
@@ -61,11 +69,6 @@ async function loadDB() {
   rA();
 }
 
-// Zapisuje A[] do Supabase.
-// Oryginalny pattern (delete + insert) przywrocony — upsert powodowal problemy
-// z politikami RLS w Supabase. Fix wzgledem oryginalu: blad insertu teraz
-// rzuca wyjatek (throw) zamiast tylko logowac — setSS("er") sie wywoluje
-// i dane sa ponownie pobierane z bazy zeby przywrocic poprawny stan UI.
 async function saveA() {
   if (!user) return;
   setSS("sy");
@@ -97,13 +100,12 @@ async function saveA() {
   } catch (e) {
     console.error("saveA error:", e.message);
     setSS("er");
-    // Przywroc stan z bazy — lokalny A[] moze byc niezsynchronizowany
     await loadDB();
   }
 }
 
-// Debounced zapis ustawien (800ms) — uzyj dla zmian inputow.
-// UWAGA: await sS() nie czeka na faktyczny zapis do Supabase.
+// Debounced zapis ustawien (800ms).
+// UWAGA: await sS() nie czeka na faktyczny zapis — uzyj saveSettingsNow() gdy konieczny.
 async function sS() {
   colS();
   if (!user) return;
