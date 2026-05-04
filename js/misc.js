@@ -51,11 +51,12 @@ async function clearAll() {
     invInf: "0",
   };
 
-  // apS() musi byc PRZED sS() — sS() wywoluje colS() ktore odczytuje
-  // wartosci z formularzy HTML. Jesli formularze maja jeszcze stare dane,
-  // colS() nadpisuje S z powrotem starymi wartosciami przed zapisem do Supabase.
+  // apS() musi byc PRZED zapisem — sS/saveSettingsNow wywoluja colS()
+  // ktore odczytuje formularze. Jesli formularze maja stare wartosci,
+  // stare dane wracaja do S przed zapisem do Supabase.
   apS();
   await saveA();
-  await sS();
+  // saveSettingsNow() zamiast sS() — gwarantuje zapis przed zamknieciem strony
+  await saveSettingsNow();
   rA();
 }
