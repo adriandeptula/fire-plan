@@ -1,4 +1,3 @@
-
 // ── ASSET TABLE ──
 // Point 7: badge label for NIER
 function assetBadge(a) {
@@ -157,33 +156,6 @@ function setPagPerPage(key, n) {
   PAG[key].page = 0;
   if (key === "assets") rPortfel();
   if (key === "hist") rPortHist();
-}
-// Generuje wiersz HTML dla pojedynczej nieruchomości (member) wewnątrz grupy.
-// Wydzielona z rATbl żeby uniknąć zagnieżdżonej funkcji — łatwiejsze testowanie.
-function renderMemberRow(member, parentId, isMob) {
-  const nameStr =
-    member.n || TICKER_NAMES[member.ticker] || member.ticker || "Pozycja";
-  const valStr =
-    member.type === "nier-wynajem"
-      ? `${PLN(pf(member.wynajem))}/mies. brutto`
-      : PLN(pf(member.mv));
-  const editBtn = `<button class="del" onclick="editA('${member.id}')" style="color:var(--go)" title="Edytuj">✎</button>
-      <button class="del" onclick="delGroup(['${member.id}'])" title="Usuń">✕</button>`;
-  if (isMob) {
-    return `<div style="padding:8px 13px 8px 28px;border-bottom:1px solid var(--b);background:var(--bg2);display:flex;align-items:center;gap:8px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:600">${nameStr}</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mu)">${valStr}</div>
-        </div>
-        <div style="display:flex;gap:4px">${editBtn}</div>
-      </div>`;
-  }
-  return `<tr style="background:var(--bg2)">
-      <td style="padding-left:28px;font-size:12px">↳ ${nameStr}</td>
-      <td></td><td class="mn">—</td><td>—</td>
-      <td class="pos" style="font-size:12px">${valStr}</td>
-      <td style="display:flex;gap:4px">${editBtn}</td>
-    </tr>`;
 }
 
 // Renderuje tabelę aktywów w elemencie #id.
@@ -346,8 +318,18 @@ async function delGroup(ids) {
   );
   if (!ok) return;
   const idSet = new Set(ids);
+  // Zapisz usuniete aktywa do historii przed filtrowaniem
+  A.filter((a) => idSet.has(a.id)).forEach((a) => {
+    portHistory.push({
+      id: uuid(), op: "sell", type: a.type, ticker: a.ticker,
+      n: a.n, units: a.units, mv: a.mv, wynajem: a.wynajem, konto: a.konto,
+      ts: new Date().toISOString(),
+    });
+  });
+  if (portHistory.length > 500) portHistory = portHistory.slice(-500);
   A = A.filter((a) => !idSet.has(a.id));
   await saveA();
+  sS(); // zapisz portHistory
   rA();
 }
 async function delGroupById(btn) {
