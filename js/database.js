@@ -4,10 +4,10 @@ function setSS(s) {
   if (d)
     d.className = "sd" + (s === "sy" ? " sy" : s === "er" ? " er" : "");
 }
+
 async function loadDB() {
   if (!user) return;
   setSS("sy");
-  // Load assets
   try {
     const { data: a, error: ae } = await sb
       .from("assets")
@@ -29,7 +29,6 @@ async function loadDB() {
   } catch (e) {
     console.warn("Assets fetch failed:", e);
   }
-  // Load settings
   try {
     const { data: s, error: se } = await sb
       .from("settings")
@@ -40,27 +39,11 @@ async function loadDB() {
       console.warn("Settings load error:", se.message);
     if (s?.data) {
       const d = s.data;
-      if (d.H) {
-        H = d.H;
-        delete d.H;
-      }
-      if (d.portHistory) {
-        portHistory = d.portHistory;
-        delete d.portHistory;
-      }
-      if (d.loans) {
-        loans = d.loans;
-        delete d.loans;
-      }
-      if (d.liabilities) {
-        liabilities = d.liabilities;
-        delete d.liabilities;
-      }
-      if (d._savedIncs) {
-        incs = d._savedIncs;
-        delete d._savedIncs;
-      }
-      // Restore wynajem from settings fallback if assets loaded without it
+      if (d.H) { H = d.H; delete d.H; }
+      if (d.portHistory) { portHistory = d.portHistory; delete d.portHistory; }
+      if (d.loans) { loans = d.loans; delete d.loans; }
+      if (d.liabilities) { liabilities = d.liabilities; delete d.liabilities; }
+      if (d._savedIncs) { incs = d._savedIncs; delete d._savedIncs; }
       if (d._wynajemMap) {
         d._wynajemMap.forEach(([id, val]) => {
           const asset = A.find((a) => a.id === id);
@@ -77,11 +60,15 @@ async function loadDB() {
   setSS("ok");
   rA();
 }
+
+// Zapisuje aktywa do Supabase.
+// Strategia: upsert aktualnych wierszy, potem pobierz ID z bazy
+// i usun te ktorych nie ma juz w A[]. Bezpieczne — nie uzywamy
+// delete-all ktore niszczylo dane gdy insert zawioedl.
 async function saveA() {
   if (!user) return;
   setSS("sy");
   try {
-    await sb.from("assets").delete().eq("user_id", user.id);
     if (A.length) {
       const rows = A.map((a) => ({
         id: a.id,
@@ -95,15 +82,35 @@ async function saveA() {
         nazwa: a.n,
         cur: a.cur || null,
       }));
-      const { error } = await sb.from("assets").insert(rows);
-      if (error) console.warn("saveA insert failed:", error.message);
+      const { error } = await sb
+        .from("assets")
+        .upsert(rows, { onConflict: "id" });
+      if (error) throw new Error(error.message);
     }
+
+    // Usun wiersze ktore nie sa juz w A[] — pobieramy ID z bazy
+    // i uzywamy .in() (bezpieczny, sprawdzony filtr w supabase-js)
+    const { data: existing } = await sb
+      .from("assets")
+      .select("id")
+      .eq("user_id", user.id);
+    if (existing) {
+      const currentIds = new Set(A.map((a) => a.id));
+      const toDelete = existing.map((r) => r.id).filter((id) => !currentIds.has(id));
+      if (toDelete.length) {
+        await sb.from("assets").delete().in("id", toDelete);
+      }
+    }
+
     setSS("ok");
   } catch (e) {
     console.warn("saveA error:", e);
     setSS("er");
   }
 }
+
+// Debounced zapis ustawien — uzyj dla zmian inputow (onChange, oninput).
+// UWAGA: await sS() nie czeka na faktyczny zapis do Supabase (setTimeout 800ms).
 async function sS() {
   colS();
   if (!user) return;
@@ -120,10 +127,7 @@ async function sS() {
             portHistory,
             loans,
             liabilities,
-            _wynajemMap: A.filter((a) => a.wynajem).map((a) => [
-              a.id,
-              a.wynajem,
-            ]),
+            _wynajemMap: A.filter((a) => a.wynajem).map((a) => [a.id, a.wynajem]),
           },
           updated_at: new Date().toISOString(),
         },
@@ -136,12 +140,12 @@ async function sS() {
   }, 800);
 }
 
-// Natychmiastowy zapis ustawień bez debounce — uzyj gdy czas jest krytyczny
-// (np. clearAll, wylogowanie). Zwraca Promise ktory mozna await-owac.
+// Natychmiastowy zapis ustawien bez debounce.
+// Uzyj gdy zapis musi byc gwarantowany (clearAll, wylogowanie).
 async function saveSettingsNow() {
   colS();
   if (!user) return;
-  clearTimeout(sT); // anuluj oczekujacy debounced save
+  clearTimeout(sT);
   setSS("sy");
   try {
     await sb.from("settings").upsert(
