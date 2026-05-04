@@ -218,5 +218,6 @@ async function delA(id) {
   if (!ok) return;
   A = A.filter((a) => a.id !== id);
   await saveA();
+  sS(); // aktualizuj _curMap i _wynajemMap w settings
   rA();
 }
