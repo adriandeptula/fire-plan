@@ -38,6 +38,8 @@
 | 🏠 **Nieruchomości** | Wartość rynkowa + wynajem netto (ryczałt 8,5%) |
 | 🏦 **Kredyty wewnętrzne** | Przepływy między 6 sub-kontami |
 | 🤖 **AI Doradca** | Claude Sonnet zna Twój portfel i plan FIRE |
+| 👁 **Incognito** | Zamazuje wartości — do używania w miejscach publicznych |
+| 📊 **Wykres portfela** | Interaktywny SVG: IKE / Poza IKE / Łącznie, hover tooltip, 3 fazy |
 
 ---
 
@@ -198,6 +200,13 @@ Tabele:
 - `assets` — aktywa portfela
 - `settings` — wszystkie ustawienia + historia (JSON blob)
 
+> **Uwaga przy tworzeniu projektu od zera:** po utworzeniu tabeli `assets` trzeba ręcznie dodać dwie kolumny których Supabase nie tworzy domyślnie:
+> ```sql
+> ALTER TABLE assets
+>   ADD COLUMN IF NOT EXISTS cur           text    DEFAULT NULL,
+>   ADD COLUMN IF NOT EXISTS wynajem_kwota numeric DEFAULT 0;
+> ```
+
 ---
 
 ## ⚙️ Konfiguracja użytkownika
@@ -230,6 +239,8 @@ Tabele:
 - [x] Tracker pożyczek wewnętrznych
 - [x] Nieruchomości (wartość + wynajem)
 - [x] AI Doradca (Claude Sonnet via Cloudflare Worker)
+- [x] Tryb incognito (zamazane wartości)
+- [x] Wykres portfela (SVG interaktywny, 3 fazy)
 - [ ] Dual-login (partner + partnerka osobno)
 - [ ] PPK (Pracownicze Plany Kapitałowe)
 - [ ] Eksport do PDF / raport miesięczny
