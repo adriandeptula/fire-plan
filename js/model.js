@@ -1,9 +1,6 @@
 function getCalcBase() {
   return S.calcBase || "brutto";
 }
-function getMRI() {
-  return getMRI_IKE();
-}
 function getMRP() {
   const b = pf(S.brutto) || 7,
     bk = (pf(S.belka) || 19) / 100;

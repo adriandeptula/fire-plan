@@ -4,10 +4,10 @@ function setSS(s) {
   if (d)
     d.className = "sd" + (s === "sy" ? " sy" : s === "er" ? " er" : "");
 }
+
 async function loadDB() {
   if (!user) return;
   setSS("sy");
-  // Load assets
   try {
     const { data: a, error: ae } = await sb
       .from("assets")
@@ -29,7 +29,6 @@ async function loadDB() {
   } catch (e) {
     console.warn("Assets fetch failed:", e);
   }
-  // Load settings
   try {
     const { data: s, error: se } = await sb
       .from("settings")
@@ -40,33 +39,25 @@ async function loadDB() {
       console.warn("Settings load error:", se.message);
     if (s?.data) {
       const d = s.data;
-      if (d.H) {
-        H = d.H;
-        delete d.H;
-      }
-      if (d.portHistory) {
-        portHistory = d.portHistory;
-        delete d.portHistory;
-      }
-      if (d.loans) {
-        loans = d.loans;
-        delete d.loans;
-      }
-      if (d.liabilities) {
-        liabilities = d.liabilities;
-        delete d.liabilities;
-      }
-      if (d._savedIncs) {
-        incs = d._savedIncs;
-        delete d._savedIncs;
-      }
-      // Restore wynajem from settings fallback if assets loaded without it
+      if (d.H) { H = d.H; delete d.H; }
+      if (d.portHistory) { portHistory = d.portHistory; delete d.portHistory; }
+      if (d.loans) { loans = d.loans; delete d.loans; }
+      if (d.liabilities) { liabilities = d.liabilities; delete d.liabilities; }
+      if (d._savedIncs) { incs = d._savedIncs; delete d._savedIncs; }
       if (d._wynajemMap) {
         d._wynajemMap.forEach(([id, val]) => {
           const asset = A.find((a) => a.id === id);
           if (asset && !asset.wynajem) asset.wynajem = val;
         });
         delete d._wynajemMap;
+      }
+      // Migracja: jesli _curMap istnieje w starych danych, przywroc cur i usun
+      if (d._curMap) {
+        d._curMap.forEach(([id, cur]) => {
+          const asset = A.find((a) => a.id === id);
+          if (asset && !asset.cur) asset.cur = cur;
+        });
+        delete d._curMap;
       }
       S = { ...S, ...d };
       apS();
@@ -77,11 +68,17 @@ async function loadDB() {
   setSS("ok");
   rA();
 }
+
 async function saveA() {
   if (!user) return;
   setSS("sy");
   try {
-    await sb.from("assets").delete().eq("user_id", user.id);
+    const { error: delErr } = await sb
+      .from("assets")
+      .delete()
+      .eq("user_id", user.id);
+    if (delErr) throw new Error("Delete failed: " + delErr.message);
+
     if (A.length) {
       const rows = A.map((a) => ({
         id: a.id,
@@ -95,15 +92,20 @@ async function saveA() {
         nazwa: a.n,
         cur: a.cur || null,
       }));
-      const { error } = await sb.from("assets").insert(rows);
-      if (error) console.warn("saveA insert failed:", error.message);
+      const { error: insErr } = await sb.from("assets").insert(rows);
+      if (insErr) throw new Error("Insert failed: " + insErr.message);
     }
+
     setSS("ok");
   } catch (e) {
-    console.warn("saveA error:", e);
+    console.error("saveA error:", e.message);
     setSS("er");
+    await loadDB();
   }
 }
+
+// Debounced zapis ustawien (800ms).
+// UWAGA: await sS() nie czeka na faktyczny zapis — uzyj saveSettingsNow() gdy konieczny.
 async function sS() {
   colS();
   if (!user) return;
@@ -120,10 +122,7 @@ async function sS() {
             portHistory,
             loans,
             liabilities,
-            _wynajemMap: A.filter((a) => a.wynajem).map((a) => [
-              a.id,
-              a.wynajem,
-            ]),
+            _wynajemMap: A.filter((a) => a.wynajem).map((a) => [a.id, a.wynajem]),
           },
           updated_at: new Date().toISOString(),
         },
@@ -134,4 +133,33 @@ async function sS() {
       setSS("er");
     }
   }, 800);
+}
+
+// Natychmiastowy zapis ustawien bez debounce.
+// Uzyj gdy zapis musi byc gwarantowany (clearAll, wylogowanie).
+async function saveSettingsNow() {
+  colS();
+  if (!user) return;
+  clearTimeout(sT);
+  setSS("sy");
+  try {
+    await sb.from("settings").upsert(
+      {
+        user_id: user.id,
+        data: {
+          ...S,
+          H,
+          portHistory,
+          loans,
+          liabilities,
+          _wynajemMap: A.filter((a) => a.wynajem).map((a) => [a.id, a.wynajem]),
+        },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
+    setSS("ok");
+  } catch (e) {
+    setSS("er");
+  }
 }

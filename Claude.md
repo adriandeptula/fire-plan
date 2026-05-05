@@ -1,429 +1,384 @@
 # CLAUDE.md — Instrukcja projektu FIRE Agent
 
-> Ten plik zawiera pełny kontekst aplikacji dla Claude — czytaj go przed każdą sesją pracy z kodem.
+> Czytaj przed każdą sesją. Zawiera pełny kontekst aplikacji.
 
 ---
 
 ## Co to za aplikacja?
 
-**FIRE Agent** to prywatna aplikacja webowa (PWA) dla rodziny Deptuła planującej Fat FIRE. Aplikacja jest po polsku, używa polskiego prawa podatkowego (IKE, podatek Belki, ryczałt od wynajmu), danych na żywo (CoinGecko, Yahoo Finance) i AI doradcy (Claude Sonnet).
+**FIRE Agent** — prywatna PWA dla rodziny Deptuła planującej Fat FIRE. Interfejs po polsku, polskie prawo podatkowe (IKE, podatek Belki, ryczałt od wynajmu 8,5%), dane live (CoinGecko, Yahoo Finance), AI doradca (Claude Sonnet).
 
-**Użytkownicy:** małżeństwo, 2 konta IKE, portfel mieszany (ETF, krypto, nieruchomości).
+**Użytkownicy:** małżeństwo, 2 konta IKE, portfel mieszany (ETF, krypto, nieruchomości, obligacje).
 
 ---
 
-## Stack i architektura
+## Stack
 
 ```
-Frontend:    Multi-file SPA — index.html + css/ + js/
-Hosting:     Cloudflare Pages (auto-deploy z GitHub, branch main)
-Workers:     Cloudflare Workers (2 workery — chat i ceny)
+Frontend:    Multi-file SPA — index.html + styles.css + js/*.js
+Hosting:     Cloudflare Pages (auto-deploy, branch main)
+Workers:     fire-chat.adrianxdeptula.workers.dev   — AI chat (Claude Sonnet)
+             fire-prices.adrianxdeptula.workers.dev — ETF/akcje + kursy walut
 Baza:        Supabase (PostgreSQL, Frankfurt)
-Auth:        Supabase Auth (email + hasło)
-Krypto:      CoinGecko API (publiczne)
-ETF/akcje:   Yahoo Finance via fire-prices.adrianxdeptula.workers.dev
-AI Chat:     Claude Sonnet via fire-chat.adrianxdeptula.workers.dev
+Auth:        Supabase Auth (email + haslo)
+Krypto:      CoinGecko API (publiczne, bez klucza)
 ```
-
-**Ważne:** Nie ma Netlify. Netlify zostało zastąpione przez Cloudflare Pages + Workers.
 
 ---
 
-## Struktura plików
+## Struktura plikow
 
 ```
 /
-├── index.html              # HTML — cały layout, wszystkie panele, modale
-├── css/
-│   └── styles.css          # Wszystkie style (ciemny motyw, zmienne CSS)
+├── index.html          # Caly layout HTML — panele, modale, nawigacja
+├── styles.css          # Wszystkie style (ciemny motyw, zmienne CSS)
 └── js/
-    ├── config.js           # Supabase URL/KEY, TICKER_NAMES, MO[]
-    ├── state.js            # Globalny stan: A, S, H, portHistory, loans, liabilities, incs, prices, chatH
-    ├── helpers.js          # g(), PLN(), pf(), gTP(), gFirePortfel(), gIKE(), gPoza(), getAV(), getETFCur()…
-    ├── model.js            # sim(), gP(), calcIkePostFire(), getMRI_IKE(), getMRP(), getINF()
-    ├── settings.js         # colS(), apS(), SM{}, uIP(), uPI(), uIkeStrat(), uIkeNetDisplay()
-    ├── database.js         # loadDB(), saveA(), sS() (debounced Supabase upsert)
-    ├── auth.js             # doLogin(), doLogout(), onLogin()
-    ├── prices-client.js    # refP(), loadCachedPrices(), getETFCur(), PRICE_CACHE_KEY
-    ├── assets-table.js     # rATbl(), groupAssets(), fmtPrice(), fmtUnits(), renderPag(), paginate()
-    ├── assets-modal.js     # openAM(), closeAM(), editA(), saveAsset(), delA(), onTC()
-    ├── liabilities.js      # openLiabModal(), saveLiab(), rLiabList(), getTotalLiabilities()
-    ├── nier.js             # openNierModal(), renderNierList(), addNierFromModal()
-    ├── loans.js            # openLoanModal(), addLoan(), addRepay(), rLoans()
-    ├── render.js           # rDash(), rPortfel(), rBud(), rPlan(), getCachedSim(), rA()
-    ├── calculators.js      # cM(), cMin(), cWyp(), syncSl(), _simFromState()
-    ├── monthly.js          # rMies(), cMies(), rozlicz(), rHist(), zapiszKalk()
-    ├── nav.js              # gn(), toggleMore(), closeMore()
-    ├── chat.js             # sChat(), WORKER_URL, SYS (system prompt)
-    ├── portfel-tabs.js     # swPT(), rPortHist()
-    ├── tooltips.js         # initTooltips()
-    ├── dialogs.js          # dlgAlert(), dlgConfirm()
-    ├── misc.js             # clearAll()
-    └── init.js             # DOMContentLoaded, session check, event listeners
+    ├── config.js       # Supabase URL/KEY, TICKER_NAMES, MO[]
+    ├── state.js        # Globalny stan: A, S, H, portHistory, loans, liabilities, incs, prices, chatH
+    ├── helpers.js      # g(), PLN(), pf(), gTP(), getAV(), getETFCur() i inne
+    ├── model.js        # sim(), gP(), calcIkePostFire(), getMRI_IKE(), getMRP(), getINF()
+    ├── settings.js     # colS(), apS(), SM{}, uIP(), uPI(), uIkeStrat(), uIkeNetDisplay()
+    ├── database.js     # loadDB(), saveA(), sS() (debounced Supabase upsert)
+    ├── auth.js         # doLogin(), doLogout(), onLogin(), blankS()
+    ├── prices-client.js # refP(), loadCachedPrices(), getETFCur(), PRICE_CACHE_KEY
+    ├── assets-table.js # rATbl(), groupAssets(), fmtPrice(), fmtUnits(), paginate(), renderPag()
+    ├── assets-modal.js # openAM(), closeAM(), editA(), saveAsset(), onTC(), PAG{}
+    ├── liabilities.js  # openLiabModal(), saveLiab(), rLiabList()
+    ├── nier.js         # openNierModal(), renderNierList(), addNierFromModal()
+    ├── loans.js        # openLoanModal(), addLoan(), addRepay(), rLoans()
+    ├── render.js       # rDash(), rPortfel(), rBud(), rPlan(), getCachedSim(), rA()
+    ├── calculators.js  # cM(), cMin(), cWyp(), syncSl(), _simFromState()
+    ├── monthly.js      # rMies(), cMies(), rozlicz(), rHist(), zapiszKalk()
+    ├── nav.js          # gn(), toggleMore(), closeMore()
+    ├── chat.js         # sChat(), WORKER_URL, SYS (system prompt)
+    ├── chart.js        # renderChart(), rWykres(), simChartData(), toggleChartSeries()
+    ├── portfel-tabs.js # swPT(), rPortHist()
+    ├── tooltips.js     # initTooltips()
+    ├── dialogs.js      # dlgAlert(), dlgConfirm()
+    ├── misc.js         # clearAll(), toggleIncognito(), initIncognito()
+    └── init.js         # DOMContentLoaded, session check
 ```
 
 ---
 
-## Globalny stan (`state.js`)
+## Globalny stan (state.js)
 
 ```javascript
-let A = []          // Aktywa: [{id, type, ticker, units, mv, wynajem, konto, n, cur}]
-let S = { ... }     // Ustawienia użytkownika (synchronizowane z Supabase)
-let H = []          // Historia miesięczna kalkulatora domowego
-let portHistory = []// Historia transakcji portfela (max 500)
-let loans = []      // Kredyty wewnętrzne
-let liabilities = []// Zobowiązania (kredyty hipoteczne)
-let incs = [...]    // Źródła dochodu w kalkulatorze miesięcznym
-let prices = {}     // Cache cen {ticker: cena, EURPLN, USDPLN}
-let chatH = []      // Historia rozmowy z AI
-let user = null     // Zalogowany użytkownik Supabase
-let sT = null       // Timer debounce dla saveSettings
+let A = []           // Aktywa: [{id, type, ticker, units, mv, wynajem, konto, n, cur}]
+let S = { ... }      // Ustawienia uzytkownika (sync z Supabase)
+let H = []           // Historia miesieczna kalkulatora domowego
+let portHistory = [] // Historia transakcji portfela (max 500 wpisow)
+let loans = []       // Kredyty wewnetrzne miedzy kontami
+let liabilities = [] // Zobowiazania zewnetrzne (kredyty hipoteczne itp.)
+let incs = [...]     // Zrodla dochodu w kalkulatorze miesiecznym
+let prices = {}      // Cache cen {ticker: cena, EURPLN, USDPLN}
+let chatH = []       // Historia rozmowy z AI (max 10 par = CHAT_MAX_PAIRS)
+let user = null      // Zalogowany uzytkownik Supabase
+let sT = null        // Timer debounce dla sS()
 ```
 
-### Obiekt S — kluczowe pola
+### Obiekt S — wszystkie pola
 
 ```javascript
 S = {
-  wt:            // Wiek obecny
-  wf:            // Docelowy wiek FIRE
-  wy:            // Cel wypłaty dziś (zł/mies. realne)
-  inv:           // Miesięczna kwota na FIRE
-  i1, i2:        // Roczne limity IKE (konto 1, konto 2)
-  i1wpl, i2wpl:  // Już wpłacono w tym roku
-  ip:            // % limitu IKE wpłacany (0-100)
-  brutto:        // Oczekiwany zwrot brutto %
-  belka:         // Podatek Belki %
-  inf:           // Stopa inflacji %
-  ikeRate:       // Zwrot na IKE % (brutto, bez Belki)
-  calcBase:      // 'brutto' | 'netto' — podstawa obliczeń poza IKE
-  ikeStrat:      // 'stop' | 'A' | 'B' | 'C' | 'D'
-  ikePostInvA:   // Opcja A: roczna kwota z portfela poza IKE
-  ikePostInvB1:  // Opcja B: % limitu IKE konto 1 z portfela
-  ikePostInvB2:  // Opcja B: % limitu IKE konto 2 z portfela
-  ikePostInvC:   // Opcja C: roczna kwota ze źródła zewnętrznego
-  ikePostInvD1:  // Opcja D: % limitu IKE konto 1 zewnętrzne
-  ikePostInvD2:  // Opcja D: % limitu IKE konto 2 zewnętrzne
-  invInf:        // '1' jeśli wpłata rośnie z inflacją
+  wt, wf,           // wiek obecny, docelowy wiek FIRE (poglądowy)
+  wy,               // cel wyplaty dzis (zl/mies., realna sila nabywcza)
+  inv,              // miesieczna kwota na FIRE
+  invInf,           // '1' = wplata rosnie z inflacja co roku
+
+  i1, i2,           // roczne limity IKE konto 1 i 2 (zl/rok)
+  i1wpl, i2wpl,     // juz wplacono w tym roku
+  ip,               // % limitu IKE faktycznie wplacany (0-100)
+  ikeRate,          // zwrot na IKE %/rok (brutto, bez Belki)
+
+  brutto,           // oczekiwany zwrot brutto %/rok
+  belka,            // podatek Belki (domyslnie 19%)
+  inf,              // stopa inflacji %/rok
+  calcBase,         // 'brutto' | 'netto' — podstawa obliczen poza IKE
+
+  wyd, roz,         // wydatki zyciowe, rozrywka (zl/mies.)
+  pw, pr,           // % nadwyzki na wakacje, rezerwe
+
+  ks, kr, kn, krt,  // kredyt: saldo, rata, nazwa, oprocentowanie (legacy)
+
+  ikeStrat,         // 'stop' | 'A' | 'B' | 'C' | 'D'
+  ikePostInvA,      // A: roczna kwota z portfela poza IKE (zl/rok)
+  ikePostInvB1,     // B: % limitu IKE konto 1, z portfela
+  ikePostInvB2,     // B: % limitu IKE konto 2, z portfela
+  ikePostInvC,      // C: roczna kwota ze zrodla zewnetrznego (zl/rok)
+  ikePostInvD1,     // D: % limitu IKE konto 1, zewnetrzne
+  ikePostInvD2,     // D: % limitu IKE konto 2, zewnetrzne
 }
 ```
+
+### Zasada — dodawanie nowego pola S (checklist)
+
+Przy kazdy nowym polu zaktualizuj WSZYSTKIE cztery miejsca:
+
+1. `state.js` — domyslna wartosc w `let S = {...}`
+2. `misc.js clearAll()` — ta sama wartosc domyslna
+3. `auth.js blankS()` — ta sama wartosc domyslna
+4. `settings.js SM{}` — mapowanie `"html-id": "klucz"` (jesli jest input HTML)
 
 ---
 
-## Model symulacji FIRE (`model.js`)
+## Typy aktywow
 
-### `sim(params)` — zwraca wynik symulacji
+| type | Opis | Wycena |
+|------|------|--------|
+| `etf` | ETF (XTB) | Yahoo Finance x kurs walutowy |
+| `stock` | Akcje | Yahoo Finance x kurs walutowy |
+| `crypto` | Kryptowaluty | CoinGecko (odpowiedz juz w PLN) |
+| `manual` | Reczne (obligacje EDO, inne) | a.mv (PLN) |
+| `nier-sprzedaz` | Nieruchomosc — wartosc rynkowa | a.mv (PLN) |
+| `nier-wynajem` | Nieruchomosc — wynajem | a.wynajem zl/mies. brutto |
+
+**Kursy ETF — getETFCur(ticker) w prices-client.js:**
+- suffix `.DE` => EUR x EURPLN
+- suffix `.UK` lub `.L` => USD x USDPLN
+- Wyjatki (priorytet nad suffixem): EGLN.UK, EGLN.L => EUR
+
+**Akcje:** kurs wg a.cur ('USD' / 'EUR' / 'PLN')
+
+---
+
+## Tabela aktywow (assets-table.js)
+
+**groupAssets(A)** — grupuje po kluczu `type:ticker:konto`.
+Wyjatki: nier-sprzedaz i nier-wynajem grupowane osobno, z polami `totalMv`/`totalWynajem` i `members[]`.
+
+**rATbl(id, del)** — renderuje tabele. `del=true` = przyciski edit/delete (widok Portfel).
+Nier-grupy z count > 1 otwieraja `openNierModal()`. count === 1 = bezposredni edit.
+
+**fmtPrice(a)** — cena w prawidlowej walucie. ETF: getETFCur() => "123.45 USD" / "98.20 EUR".
+Akcje: a.cur. Pozostale: PLN(p).
+
+**fmtUnits(u)** — ilosc bez trailing zeros, bez "szt." (szt. jest w naglowku kolumny).
+
+---
+
+## Model symulacji FIRE (model.js)
+
+### sim(params) => wynik
+
+Wejscie: inv, ike, start, iS, wy, wiek, wynajemNetto, ikeStrat, ikePostInv*, i1Limit, i2Limit, invInf
+
+Wyjscie:
+```javascript
+{ yr, fa, fy,         // lata do FIRE, wiek FIRE, rok FIRE
+  tot, iF, pF,        // portfel lacznie/IKE/pozaIKE przy FIRE
+  cy,                 // rok CoastFIRE (null jesli nieosiagniety)
+  i60, p60, m60,      // portfele i wyplata miesieczna od 60 lat
+  G,                  // cel nominalny (tylko do UI)
+  wyAtFIRE,           // nominalna wyplata przy FIRE
+  infTotal,           // skumulowana inflacja jako ulamek
+  wynajemNetto }
+```
+
+### Trigger FIRE (v17 — oparty wylacznie na pP)
+
+IKE jest zablokowane do 60. r.z. i nie moze pokryc wyplat w fazie 2:
 
 ```javascript
-sim({
-  inv,           // miesięczna wpłata
-  ike,           // miesięczny limit IKE
-  start,         // portfel startowy (łącznie)
-  iS,            // portfel IKE startowy
-  wy,            // cel wypłaty dziś (realne zł)
-  wiek,          // obecny wiek
-  wynajemNetto,  // dochód netto z wynajmu/mies.
-  ikeStrat,      // 'stop'|'A'|'B'|'C'|'D'
-  ikePostInvA, ikePostInvB1, ikePostInvB2,
-  ikePostInvC, ikePostInvD1, ikePostInvD2,
-  i1Limit, i2Limit, // roczne limity IKE
-  invInf,        // bool — czy wpłata rośnie z inflacją
-})
-// zwraca:
-{
-  yr,       // lata do FIRE
-  fa,       // wiek przy FIRE
-  fy,       // rok FIRE
-  tot,      // łączny portfel przy FIRE
-  iF,       // IKE przy FIRE
-  pF,       // poza IKE przy FIRE
-  cy,       // rok CoastFIRE (null jeśli nie osiągnięty)
-  i60,      // IKE w wieku 60 lat
-  p60,      // poza IKE w wieku 60 lat
-  m60,      // miesięczna wypłata od 60 lat (nominalna)
-  G,        // cel nominalny portfela
-  wyAtFIRE, // nominalna wypłata miesięczna przy FIRE
-  infTotal, // skumulowana inflacja jako ułamek
-  wynajemNetto,
+const potrzebaBase = Math.max(0, wyNom - wynajemNetto);
+if (potrzebaBase === 0 || pP >= potrzebaBase) {
+  // subsymulacja fazy 2: czy pP nie zejdzie do zera przed 60. r.z.?
+  // + weryfikacja: m60 >= wyNom x inflAt60
+  if (wystarczy) break; // FIRE osiagniety
 }
 ```
 
-### `calcIkePostFire(params)` — wpłata na IKE po FIRE
-
-```javascript
-// Zwraca { monthly, fromCapital }
-// fromCapital=true → zmniejsza portfel poza IKE
-// fromCapital=false → ze źródła zewnętrznego (nie zmniejsza portfela)
+**G — wylacznie do UI** (pasek postepu, kafelki, CoastFIRE). Nie decyduje o triggerze:
+```
+G = max(0, wy - wynajemNetto) x (1+inf)^yr x 12 x 25
 ```
 
-### Logika warunków FIRE
+### Trzy fazy
 
-**Trigger FIRE oparty wyłącznie na `pP` (poza IKE)** — IKE jest zablokowane do 60. r.ż. i nie może pokryć wypłat w fazie 2:
-
-```javascript
-// FIRE odpala się gdy pP uniesie fazę 2 samodzielnie:
-const potrzebaBase = Math.max(0, wyNom - wynajemNetto);
-if (potrzebaBase === 0 || pP >= potrzebaBase) { ...subsymulacja... }
-```
-
-**`G` jest wyłącznie do UI** (pasek postępu, kafelki) i CoastFIRE — nie decyduje o FIRE:
-```javascript
-G = (wy - wynajemNetto) × (1+inf)^yr × 12 × 25
-```
-
-Subsymulacja (faza 2 test) kończy się gdy JEDNOCZEŚNIE:
-1. `pP` nie zejdzie do zera przed 60. r.ż. — wypłaty rosną z inflacją wewnątrz pętli
-2. `m60check >= wyAt60` — w wieku 60 lat: `4% × (pPtest + pItest) / 12 + wynajemAt60 ≥ wyNom × inflAt60`
+**Faza 1 — Akumulacja:** pI i pP rosna o wplaty i odsetki co miesiac.
+**Faza 2 — Wyplaty (FIRE -> 60):** wyplaty z pP rosna z inflacja (portWithdrawBase x inflFactor). pI rosnie + opcjonalne wplaty wg strategii IKE.
+**Faza 3 — Po 60 (IKE odblokowane):** m60 = (i60+p60) x 4%/12 + wynajemAt60
 
 ### Stopy zwrotu
 
-- `getMRI_IKE()` → brutto/12 (IKE — bez Belki zawsze)
-- `getMRP()` → brutto/12 (tryb brutto) lub brutto*(1-Belka)/12 (tryb netto)
-
-### Faza 2: wypłaty z poza IKE (FIRE → 60. r.ż.)
-
-Efektywna stopa wypłaty z `poza IKE` jest **wyższa niż 4%** bo IKE jest zamrożone:
-```
-portWithdraw = (wyAtFIRE - wynajemNetto) × inflFactor  ← rośnie z inflacją co rok
-```
-Wynajem też rośnie z inflacją. W ten sposób realna siła nabywcza jest stała przez całą fazę 2.
-
-### Faza 3: IKE odblokowane (od 60. r.ż.)
-
-```
-m60 = (p60 + i60) × 4% / 12 + wynajemNetto × (1+inf)^y60
-```
-Wynajem indeksowany do poziomu 60. roku życia.
+- getMRI_IKE() — ikeRate/100/12 (zawsze brutto)
+- getMRP() — brutto/100/12 (tryb brutto) lub brutto*(1-belka)/100/12 (tryb netto)
+- getINF() — inf/100
 
 ---
 
 ## Strategie IKE po FIRE
 
-| Kod | Opis | fromCapital |
-|-----|------|-------------|
-| `stop` | Brak wpłat | — |
-| `A` | Stała kwota rocznie z portfela poza IKE | `true` |
-| `B` | % limitu IKE (indeks. inflacją) z portfela | `true` |
-| `C` | Stała kwota rocznie ze źródła zewnętrznego | `false` |
-| `D` | % limitu IKE (indeks. inflacją) ze źródła zewn. | `false` |
+| Kod | Zrodlo | Kwota | fromCapital |
+|-----|--------|-------|-------------|
+| stop | — | Brak wplat | — |
+| A | Portfel poza IKE | ikePostInvA zl/rok (stala) | true |
+| B | Portfel poza IKE | (i1*B1% + i2*B2%) x inflFactor / 12 | true |
+| C | Zrodlo zewnetrzne | ikePostInvC zl/rok (stala) | false |
+| D | Zrodlo zewnetrzne | (i1*D1% + i2*D2%) x inflFactor / 12 | false |
 
-**Uwaga:** Dla opcji B i D limity IKE są mnożone przez `(1+inf)^yearsFromFire`.
+fromCapital=true => kwota odejmowana od pP w danym miesiacu.
+Dla B i D limity IKE indeksowane inflacja od momentu FIRE.
+ikePostInvA i ikePostInvC to kwoty ROCZNE — calcIkePostFire() dzieli przez 12.
 
 ---
 
-## Typy aktywów (`type` w obiekcie Asset)
+## Wykres portfela (chart.js)
 
-| type | Opis | Wycena |
-|------|------|--------|
-| `etf` | ETF (XTB) | Yahoo Finance × kurs walutowy |
-| `stock` | Akcje | Yahoo Finance × kurs walutowy |
-| `crypto` | Kryptowaluty | CoinGecko × 1 (już w PLN) |
-| `manual` | Ręczne (obligacje EDO, inne) | `a.mv` |
-| `nier-sprzedaz` | Nieruchomość — wartość rynkowa | `a.mv` |
-| `nier-wynajem` | Nieruchomość — wynajem | `a.wynajem` /mies. |
+- rWykres() / renderChart() — rysuje interaktywny SVG w #chart-wrap
+- simChartData() — dane dla wszystkich 3 faz (uzywa getCachedSim())
+- 3 serie: Lacznie (#d4a843), IKE (#4eb87a), Poza IKE (#5a9ef0)
+- toggleChartSeries(key) — widocznosc serii, stan w localStorage (fire-chart-vis)
+- Hover tooltip z wartosciami dla najblizszego roku
+- Tlo faz: akumulacja (niebieski), wyplaty (czerwony), IKE otwarte (zielony)
 
-**Kursy ETF:**
-- Końcówka `.DE` → EUR × EURPLN
-- Końcówka `.UK` lub `.L` → USD × USDPLN (LSE trade in USD)
+---
 
-**Akcje:** kurs zależy od `a.cur` (`USD`/`EUR`/`PLN`)
+## Incognito mode (misc.js)
+
+- toggleIncognito() — przelacza body.incognito, stan w localStorage (fire-incognito)
+- initIncognito() — przywraca stan przy kazdym logowaniu
+- Checkbox na ekranie logowania (mozna wlaczyc przed zalogowaniem)
+- CSS: wartosci finansowe zamazane filter:blur(8px) + pointer-events:none
+- Przycisk oczu w sidebarze i na ekranie logowania
 
 ---
 
 ## Workers Cloudflare
 
-### `fire-chat.adrianxdeptula.workers.dev`
-- Metoda: `POST`
-- Body: `{ system: "...", messages: [{role, content}] }`
-- Odpowiedź: `{ content: "odpowiedź asystenta" }`
-- **Wymagane Variable:** `ANTHROPIC_KEY = "sk-ant-..."`
-- **Wymagane CORS:** `Access-Control-Allow-Origin: *`
+### fire-chat.adrianxdeptula.workers.dev
+- POST {system, messages} => {content}
+- Wymaga Variable: ANTHROPIC_KEY
+- Musi zwracac CORS: Access-Control-Allow-Origin: * + Allow-Methods: POST, OPTIONS
+- Brak CORS => blad TypeError w przegladarce (nie HTTP 4xx/5xx!)
 
-### `fire-prices.adrianxdeptula.workers.dev`
-- Parametr: `?tickers=["SXR8.DE","BTC",...]` (JSON encoded)
-- Odpowiedź: `{ "SXR8.DE": 500.12, "EURPLN": 4.27, "USDPLN": 3.85, ... }`
-- Cache po stronie klienta: 12h w localStorage (`fire-prices-cache`)
+### fire-prices.adrianxdeptula.workers.dev
+- GET ?tickers=["SXR8.DE","BTC",...] => {"SXR8.DE": 500.12, "EURPLN": 4.27, ...}
+- Tickers .UK konwertowane do .L przed zapytaniem, mapowane z powrotem po odpowiedzi
+- Cache klienta: 12h w localStorage (PRICE_CACHE_KEY = fire-prices-cache)
 
 ---
 
 ## Baza danych Supabase
 
-### Tabela `assets`
-```sql
-id          text PRIMARY KEY
-user_id     uuid REFERENCES auth.users
-type        text    -- 'etf'|'stock'|'crypto'|'manual'|'nier-sprzedaz'|'nier-wynajem'
-ticker      text
-units       numeric
-manual_val  numeric
-konto       text    -- 'ike'|'poza'
-nazwa       text
-cur         text    -- 'USD'|'EUR'|'PLN' (dla akcji)
+### Tabela assets
+
+Rzeczywisty schemat (zweryfikowany):
+
+```
+id            text              PRIMARY KEY
+user_id       uuid              REFERENCES auth.users
+type          text              -- etf|stock|crypto|manual|nier-sprzedaz|nier-wynajem
+ticker        text
+units         double precision  -- UWAGA: double precision, nie numeric
+manual_val    double precision  -- a.mv w aplikacji; double precision, nie numeric
+konto         text              -- ike|poza
+nazwa         text              -- a.n w aplikacji
+created_at    timestamptz       -- auto
+cur           text              -- USD|EUR|PLN (tylko dla type=stock); dodana recznie ALTER TABLE
+wynajem_kwota numeric           -- a.wynajem w aplikacji; dodana recznie ALTER TABLE
 ```
 
-### Tabela `settings`
-```sql
-user_id     uuid PRIMARY KEY REFERENCES auth.users
-data        jsonb   -- cały obiekt S + H, portHistory, loans, liabilities, _savedIncs, _wynajemMap
+> **Tworzenie od zera** — po utworzeniu tabeli `assets` w Supabase uruchom:
+> ```sql
+> ALTER TABLE assets
+>   ADD COLUMN IF NOT EXISTS cur           text    DEFAULT NULL,
+>   ADD COLUMN IF NOT EXISTS wynajem_kwota numeric DEFAULT 0;
+> ```
+> Supabase tworzy domyslnie id/user_id/type/ticker/units/manual_val/konto/nazwa/created_at.
+> `cur` i `wynajem_kwota` wymagaja recznego dodania.
+
+### Tabela settings
+```
+user_id     uuid PK   REFERENCES auth.users
+data        jsonb     -- S + H + portHistory + loans + liabilities + _savedIncs + _wynajemMap
 updated_at  timestamptz
 ```
 
+`data` zawiera rowniez `_wynajemMap: [[id, kwota], ...]` — fallback gdy `wynajem_kwota`
+nie zaladuje sie z assets (starsza kompatybilnosc).
+
 ---
 
-## Kluczowe funkcje pomocnicze
+## Kluczowe funkcje
 
 ```javascript
-g(id)              // document.getElementById(id)
-PLN(n)             // formatuj jako "1 234 567 zł"
-pf(v)              // parseFloat(v) || 0
-gTP()              // łączna wartość wszystkich aktywów
-gFirePortfel()     // portfel FIRE (bez nier-sprzedaz)
-gIKE()             // wartość aktywów na IKE
-gPoza()            // wartość aktywów poza IKE
-getAV(a)           // wartość pojedynczego aktywa
-getIKEM()          // miesięczny limit wpłat IKE = (i1+i2)/12 × ip%
-getWynajemNetto()  // suma wynajmu × 0.915
-getTotalLiabilities() // suma zobowiązań
-getCachedSim()     // sim() z cache (invalidate przy każdym rA())
-rA()               // debounced re-render całej aplikacji
-colS()             // odczyt formularzy → S
-apS()              // S → wartości formularzy
-sS()               // debounced Supabase save (800ms)
+// Formatowanie
+g(id)               // document.getElementById(id)
+PLN(n)              // "1 234 567 zl" (zaokraglone)
+pct(n)              // "12.3%"
+pf(v)               // parseFloat(v) || 0
+fmtUnits(u)         // "12.5" bez trailing zeros
+fmtPrice(a)         // "123.45 USD" | "98.20 EUR" | "450 zl"
+sT2(id, v)          // skrot: el.textContent = v
+
+// Portfel
+gTP()               // suma wszystkich aktywow
+gFirePortfel()      // bez nier-sprzedaz i nier-wynajem
+gIKE() / gPoza()    // IKE / poza IKE (bez nier)
+gNierSprzedaz()     // suma mv nieruchomosci
+getWynajemNetto()   // suma wynajem x 0.915
+getTotalLiabilities() // suma liabilities[] || S.ks (legacy fallback)
+getAV(a)            // wartosc jednego aktywa w PLN
+getIKEM()           // miesieczny limit IKE = (i1+i2)/12 x ip/100
+
+// Symulacja
+sim(params)         // glowna symulacja FIRE
+gP()                // buduje params do sim() z S i portfela
+getCachedSim()      // sim() z cache (invalidowany przy rA())
+calcIkePostFire(p)  // miesieczna wplata IKE po FIRE => {monthly, fromCapital}
+
+// Render
+rA()                // debounced re-render wszystkiego (80ms)
+_rAImmediate()      // natychmiastowy render, invaliduje _simCacheKey
+
+// Dane
+colS() / apS()      // formularze <=> S
+sS()                // debounced (800ms) zapis do Supabase
+blankS()            // fabryka pustego S (auth.js)
 ```
 
 ---
 
-## Konwencje kodowania
+## Konwencje
 
-- **Identyfikatory HTML:** krótkie, np. `kw`, `kf`, `kr`, `ki`, `k60-real` — historyczne, nie zmieniaj bez potrzeby
-- **Zmienne globalne:** wszystkie w `state.js`, modyfikowane przez funkcje z innych plików
-- **Brak frameworków:** czysty vanilla JS — brak React, Vue, jQuery
-- **CSS:** zmienne CSS `var(--go)`, `var(--gr)`, `var(--re)`, `var(--bl)` dla kolorów
-- **Formatowanie liczb:** zawsze `PLN()` dla złotówek, `pct()` dla procentów
-- **Debouncing:** `rA()` (80ms), `sS()` (800ms)
-- **Przecinek → kropka:** `normalizeComma()` i globalny listener w `auth.js`
+- Brak frameworkow — vanilla JS
+- Zmienne globalne — w state.js, modyfikowane bezposrednio
+- HTML IDs — krotkie historyczne (kw, kf, kr) — nie zmieniaj
+- Style — wylacznie w styles.css, zero znacznikow style w HTML
+- Kolory CSS: --go zloty, --gr zielony, --re czerwony, --bl niebieski, --pu fioletowy, --mu muted
+- Przecinek => kropka: normalizeComma() + globalny listener w auth.js onLogin()
 
 ---
 
-## Kolory CSS
+## Weryfikacja po zmianie
 
-```
---go  #d4a843   złoty (primary, FIRE)
---gr  #4eb87a   zielony (zysk, IKE)
---re  #e05a6a   czerwony (ryzyko, dług)
---bl  #5a9ef0   niebieski (poza IKE)
---pu  #9b7fe8   fioletowy (nieruchomości)
---mu  #5a5878   muted (podtytuły, labels)
---t   #e8e6f0   tekst główny
---t2  #a8a4c0   tekst drugorzędny
+```bash
+grep -c '<body'    index.html   # => 1
+grep -c '<style'   index.html   # => 0
+grep -c 'viewport' index.html   # => 1
 ```
 
 ---
 
-## Częste błędy i pułapki
-
-### 1. Worker CORS
-Worker `fire-chat` MUSI zwracać:
-```
-Access-Control-Allow-Origin: *
-Access-Control-Allow-Methods: POST, OPTIONS
-Access-Control-Allow-Headers: Content-Type
-```
-Bez tego przeglądarka blokuje odpowiedź (błąd TypeError, nie HTTP).
-
-### 2. sim() — ikePostInv jest ROCZNA
-Dla opcji A i C: `ikePostInvA/C` to kwota **roczna** (zł/rok), model dzieli przez 12 wewnętrznie w `calcIkePostFire()`.
-
-### 3. Cache symulacji
-`_simCacheKey` jest invalidowany na początku każdego `_rAImmediate()`. Jeśli chcesz wymusić przeliczenie, wywołaj `rA()`.
-
-### 4. Paginacja
-Tabela aktywów (`#at`) używa paginacji. Stan w `PAG.assets` i `PAG.hist`. Reset strony przez `setPagPage('assets', 0)`.
-
-### 5. Wynajem w bazie danych
-Kolumna w Supabase to `wynajem_kwota` (LUB `wynajem` — fallback). Przy `loadDB()` aplikacja próbuje obu. Dodatkowy fallback: `_wynajemMap` w settings JSON.
-
-### 6. Dodawanie nowego pola do S
-1. Dodaj klucz i wartość domyślną w `state.js` w obiekcie `S`
-2. Dodaj mapowanie `html-id: 'klucz'` w `SM` w `settings.js` (jeśli jest input HTML)
-3. Dodaj domyślną wartość też w `clearAll()` w `misc.js`
-
----
-
-## Testowanie zmian
-
-1. Zmień plik w `/home/claude/`, sprawdź logikę
-2. Skopiuj do `/mnt/user-data/outputs/` lub dostarcz diff
-3. Przetestuj scenariusze:
-   - Brak aktywów, brak ustawień
-   - Różne strategie IKE (stop/A/B/C/D)
-   - FIRE już osiągnięty (yr ≤ 0)
-   - Brak połączenia z workerem (sChat)
-
----
-
-## Changelog ostatnich zmian
+## Changelog
 
 | Wersja | Zmiana |
 |--------|--------|
-| v17 | **BREAKING:** Trigger FIRE oparty wyłącznie na pP (poza IKE), nie pI+pP — IKE nie może pokryć wypłat w fazie 2 |
-| v17 | G zredukowane o wynajemNetto: `(wy-wynajem)×25×12×inflacja` — G wyłącznie do UI |
-| v17 | Wypłaty w fazie 2 indeksowane inflacją (`portWithdrawBase × inflFactor`) |
-| v17 | Wynajem indeksowany inflacją w fazie 2, m60 i subsymulacjach |
-| v17 | pItest w subsymulacjach + m60check weryfikuje cel po 60. r.ż. |
-| v16 | 4 strategie IKE po FIRE (A/B/C/D + stop), fix ikePostInv roczna vs miesięczna |
-| v16 | Nowy kafelek Dashboard: "Portfel w wieku 60 lat" (poza IKE + IKE + łącznie) |
-| v16 | Wszystkie kwoty dash: wartość dziś (realna) + nominalna poniżej |
-| v16 | Fix chat.js: prawidłowy URL workera, lepsze komunikaty błędów |
-| v15 | Strategie IKE: stop + cont (zastąpione przez v16) |
-| v15 | Kafelki "Portfel poza IKE przy FIRE" i "Portfel IKE przy FIRE" |
-| v15 | Ustawienia: slidery → inputy liczbowe, osobne pole IKE rate |
-
----
-
-## Pułapka: podwójny `<body>` tag w index.html
-
-Oryginalny `index.html` miał dwa tagi `<body>` pod rząd:
-```html
-<body>
-  <body>
-    <!-- LOGIN -->
-```
-
-Przeglądarka naprawia to automatycznie, ale przy każdej edycji pliku przez Claude należy sprawdzić czy nie powstał duplikat. Objaw: JS się nie ładuje, aplikacja nie działa, ekran logowania nie reaguje.
-
-**Weryfikacja:**
-```bash
-grep -c '<body' index.html   # powinno zwrócić 1
-```
-
-**Fix:** usuń dodatkowy `<body>` — zostaw tylko jeden, tuż po `</head>`.
-
----
-
-## Pułapka: misc.js clearAll — musi zawierać WSZYSTKIE klucze S
-
-Przy każdym dodaniu nowego pola do obiektu `S` (w `state.js`) **trzeba też dodać to pole w `clearAll()` w `misc.js`**. W przeciwnym razie po "Usuń wszystkie dane" stare wartości mogą zostać w pamięci i powodować błędy symulacji.
-
-Aktualna lista kluczy IKE po FIRE w `S` i `clearAll`:
-```
-ikeStrat, ikePostInvA, ikePostInvB1, ikePostInvB2,
-ikePostInvC, ikePostInvD1, ikePostInvD2, invInf
-```
-
-**Stary bug:** `ikePostInv: "0"` — zastąpiony przez 6 osobnych pól (A/B1/B2/C/D1/D2).
-
----
-
-## Zasada: style tylko w css/styles.css
-
-**Nigdy nie dodawaj `<style>` bloków bezpośrednio w `index.html`.** Wszystkie style CSS należą do `css/styles.css` — to jedyne miejsce na reguły CSS w projekcie.
-
-Przy każdej zmianie wizualnej:
-1. Edytuj `css/styles.css`
-2. Używaj istniejących zmiennych CSS (`var(--go)`, `var(--gr)`, `var(--b2)` itd.)
-3. Dla responsywności dodawaj reguły wewnątrz istniejącego bloku `@media (max-width: 768px)` na końcu pliku
-
-**Weryfikacja po zmianie:**
-```bash
-grep -c '<style' index.html   # powinno zwrócić 0
-```
+| v18 | Odkryto: kolumny `cur` i `wynajem_kwota` nie istnialy w schemacie Supabase — insert zawsze failowal (blad byl tylko logowany), aktywa nigdy nie trafialy do bazy |
+| v18 | Fix saveA(): blad insert/delete teraz rzuca throw zamiast console.warn — setSS("er") + loadDB() przy bledzie |
+| v18 | Fix saveA(): `cur` nie jest juz w insert rows gdy kolumna nie istnieje; migracja przez _curMap w settings |
+| v18 | Fix doLogout() — pelny sync S z ikeRate, calcBase, ikeStrat, 6x ikePostInv*, invInf |
+| v18 | Refaktoryzacja: blankS() w auth.js — jedno miejsce dla domyslnych wartosci S |
+| v18 | Usunieto dead code: renderMemberRow() w assets-table.js (nigdy niecallowana) |
+| v18 | Fix: podwojny meta viewport w index.html |
+| v18 | Fix: duplikat display:flex w .pag-wrap (styles.css) |
+| v17 | BREAKING: Trigger FIRE oparty wylacznie na pP — IKE nie moze pokryc wyplat fazy 2 |
+| v17 | G wylacznie do UI — zredukowane o wynajemNetto, nie decyduje o triggerze |
+| v17 | Wyplaty fazy 2 indeksowane inflacja (portWithdrawBase x inflFactor) |
+| v17 | Wynajem indeksowany inflacja w fazie 2, m60 i subsymulacjach |
+| v17 | Subsymulacje z pItest + weryfikacja m60check w wieku 60 lat |
+| v16 | 4 strategie IKE po FIRE (A/B/C/D + stop) |
+| v16 | Kafelek Portfel w wieku 60 lat na Dashboard |
+| v16 | Kwoty Dashboard: wartosc dzis (realna) + nominalna ponizej |
+| v15 | Ustawienia: slidery => inputy liczbowe; osobne pole IKE rate; calcBase |
