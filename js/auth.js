@@ -1,7 +1,10 @@
 // ── AUTH ──
 
-// Jedyne miejsce z domyślnymi wartościami S.
-// Używane przez: state.js (init), doLogout(), clearAll() w misc.js.
+// Jedyne źródło domyślnych wartości S.
+// Wywoływane przez: doLogout() i clearAll() w misc.js.
+// WAŻNE: auth.js ładowany jest po state.js — blankS() dostępna
+// dopiero po załadowaniu auth.js, więc nie używaj jej w state.js
+// (state.js inicjalizuje S literałem).
 function blankS() {
   return {
     wt: "31",
@@ -102,13 +105,13 @@ async function onLogin() {
   await refP();
   initTooltips();
 
-  // Listener change tylko na ustawieniach i budżecie — nie na modalach
-  const SETTINGS_SELECTORS = [
+  // Listener change tylko na panelach ustawień i budżetu (nie na modalach)
+  const settingsSelector = [
     "#p-budzet .fi", "#p-budzet .fs",
     "#p-budzet-dom .fi", "#p-budzet-dom .fs",
     "#p-ust .fi", "#p-ust .fs",
   ].join(",");
-  document.querySelectorAll(SETTINGS_SELECTORS).forEach((el) =>
+  document.querySelectorAll(settingsSelector).forEach((el) =>
     el.addEventListener("change", () => {
       sS();
       rA();
