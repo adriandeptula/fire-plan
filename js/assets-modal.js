@@ -1,6 +1,5 @@
 // ── ASSET MODAL ──
 let editingId = null;
-// Pagination state
 const PAG = {
   assets: { page: 0, perPage: 10 },
   hist: { page: 0, perPage: 10 },
@@ -40,7 +39,6 @@ function editA(id) {
   resetAM();
   g("am-title").textContent = "Edytuj aktywo";
   g("am-save").textContent = "Zapisz zmiany";
-  // Ukryj selector typu podczas edycji
   const atypeRow = g("atype-row");
   if (atypeRow) atypeRow.style.display = "none";
   const typeVal =
@@ -54,23 +52,14 @@ function editA(id) {
   const sel = g("atype");
   let found = false;
   for (const opt of sel.options) {
-    if (opt.value === typeVal) {
-      sel.value = typeVal;
-      found = true;
-      break;
-    }
+    if (opt.value === typeVal) { sel.value = typeVal; found = true; break; }
   }
   if (!found) {
-    if (a.type === "etf") {
-      sel.value = "etf:OTHER";
-      g("atick").value = a.ticker;
-    } else if (a.type === "crypto") {
-      sel.value = "crypto:OTHER";
-      g("atick").value = a.ticker;
-    } else sel.value = typeVal;
+    if (a.type === "etf") { sel.value = "etf:OTHER"; g("atick").value = a.ticker; }
+    else if (a.type === "crypto") { sel.value = "crypto:OTHER"; g("atick").value = a.ticker; }
+    else sel.value = typeVal;
   }
   onTC();
-  // Wypelnij tylko pola odpowiednie dla typu — reszte pozostaw puste
   const isNier = a.type === "nier-sprzedaz" || a.type === "nier-wynajem";
   const isManual = a.type === "manual";
   if (!isNier && !isManual && a.units) g("aunits").value = a.units;
@@ -96,7 +85,6 @@ function onTC() {
   g("amrow").style.display = isManual || isNierSprzedaz ? "block" : "none";
   g("akonto-row").style.display = isNier ? "none" : "block";
   g("acur-row").style.display = isStock ? "block" : "none";
-  // Wyczysc pola nieodpowiednie dla wybranego typu
   if (isManual || isNier) g("aunits").value = "";
   if (!isNierWynajem) g("awynajem").value = "";
   if (!isManual && !isNierSprzedaz) g("amval").value = "";
@@ -112,7 +100,6 @@ function getTickerName(ticker, type) {
   return ticker;
 }
 
-// Formatuje ilosc bez trailing zeros i bez "szt." (szt. jest w naglowku kolumny)
 function fmtUnits(u) {
   if (u === 0 || u === "" || u === null || u === undefined) return "—";
   const n = parseFloat(u);
@@ -136,38 +123,45 @@ async function saveAsset() {
   const n = userNazwa || getTickerName(ticker, tg);
 
   // Walidacja
-  if (!ticker && !isNier) {
-    await dlgAlert("Podaj ticker aktywa.", "⚠️");
-    return;
-  }
-  if (!isNier && !isManual && units <= 0) {
-    await dlgAlert("Podaj ilość jednostek większą od 0.", "⚠️");
-    return;
-  }
-  if (tg === "nier-wynajem" && !wynajem) {
-    await dlgAlert("Podaj kwotę wynajmu miesięcznego.", "⚠️");
-    return;
-  }
-  if ((isManual || tg === "nier-sprzedaz") && !mv) {
-    await dlgAlert("Podaj wartość rynkową.", "⚠️");
-    return;
-  }
+  if (!ticker && !isNier) { await dlgAlert("Podaj ticker aktywa.", "⚠️"); return; }
+  if (!isNier && !isManual && units <= 0) { await dlgAlert("Podaj ilość jednostek większą od 0.", "⚠️"); return; }
+  if (tg === "nier-wynajem" && !wynajem) { await dlgAlert("Podaj kwotę wynajmu miesięcznego.", "⚠️"); return; }
+  if ((isManual || tg === "nier-sprzedaz") && !mv) { await dlgAlert("Podaj wartość rynkową.", "⚠️"); return; }
 
-  // ── SPRZEDAZ ──
+  // ── SPRZEDAŻ ──
   if (op === "sell" && !editingId) {
-    const existing = A.find(
-      (a) => a.ticker === ticker && a.konto === konto && a.type === tg,
-    );
-    if (!existing) {
-      await dlgAlert(
-        "Nie znaleziono aktywa do sprzedaży. Sprawdź czy ticker i konto (IKE / Poza IKE) się zgadzają.",
-        "⚠️",
-      );
-      return;
+    if (isManual) {
+      // Odejmuj od wpisów po kolei — obsługuje wiele wpisów (duplikaty legacy)
+      let rem = mv;
+      const matching = A.filter(a => a.type === tg && a.ticker === ticker && a.konto === konto);
+      if (!matching.length) {
+        await dlgAlert("Nie znaleziono aktywa do sprzedaży. Sprawdź ticker i konto.", "⚠️");
+        return;
+      }
+      for (const a of matching) {
+        if (rem <= 0) break;
+        const reduce = Math.min(pf(a.mv), rem);
+        a.mv = pf(a.mv) - reduce;
+        rem -= reduce;
+      }
+      A = A.filter(a => !(a.type === tg && a.ticker === ticker && a.konto === konto && pf(a.mv) <= 0));
+    } else {
+      // ETF / stock / crypto — odejmuj units od wpisów po kolei
+      let rem = units;
+      const matching = A.filter(a => a.ticker === ticker && a.konto === konto && a.type === tg);
+      if (!matching.length) {
+        await dlgAlert("Nie znaleziono aktywa do sprzedaży. Sprawdź ticker i konto (IKE / Poza IKE).", "⚠️");
+        return;
+      }
+      for (const a of matching) {
+        if (rem <= 0) break;
+        const reduce = Math.min(pf(a.units), rem);
+        a.units = pf(a.units) - reduce;
+        rem -= reduce;
+      }
+      // Usuń wpisy z zerową ilością
+      A = A.filter(a => !(a.ticker === ticker && a.konto === konto && a.type === tg && pf(a.units) <= 0));
     }
-    existing.units = Math.max(0, pf(existing.units) - units);
-    if (isManual || tg === "nier-sprzedaz")
-      existing.mv = Math.max(0, pf(existing.mv) - mv);
 
     portHistory.push({
       id: uuid(), op: "sell", type: tg, ticker, n, units, mv, wynajem, konto,
@@ -176,7 +170,7 @@ async function saveAsset() {
     if (portHistory.length > 500) portHistory = portHistory.slice(-500);
 
     await saveA();
-    sS(); // zapisz portHistory do settings (debounced)
+    sS();
     closeAM();
     rA();
     try { localStorage.removeItem(PRICE_CACHE_KEY); } catch (e) {}
@@ -185,28 +179,48 @@ async function saveAsset() {
   }
 
   // ── KUPNO / EDYCJA ──
-  const asset = {
-    id: editingId || Date.now().toString(),
-    type: tg, ticker, units, mv, wynajem, konto, n, cur: stockCur,
-  };
-
   if (editingId) {
+    // Edycja: zamień istniejący wpis
+    const asset = { id: editingId, type: tg, ticker, units, mv, wynajem, konto, n, cur: stockCur };
     A = A.map((a) => (a.id === editingId ? asset : a));
     portHistory.push({
       id: uuid(), op: "edit", type: tg, ticker, n, units, mv, wynajem, konto,
       ts: new Date().toISOString(),
     });
-  } else {
-    A.push(asset);
+  } else if (isManual) {
+    // Obligacje / inne ręczne — scal wartość z istniejącym wpisem
+    const existing = A.find(a => a.type === tg && a.ticker === ticker && a.konto === konto);
+    if (existing) {
+      existing.mv = pf(existing.mv) + mv;
+      if (userNazwa) existing.n = userNazwa;
+    } else {
+      A.push({ id: Date.now().toString(), type: tg, ticker, units: 0, mv, wynajem: 0, konto, n, cur: null });
+    }
     portHistory.push({
-      id: uuid(), op: "buy", type: tg, ticker, n, units, mv, wynajem, konto,
+      id: uuid(), op: "buy", type: tg, ticker, n, units: 0, mv, wynajem: 0, konto,
+      ts: new Date().toISOString(),
+    });
+  } else {
+    // ETF / stock / crypto — scal units z istniejącym wpisem (ten sam ticker + konto)
+    const existing = A.find(a => a.type === tg && a.ticker === ticker && a.konto === konto);
+    if (existing) {
+      existing.units = pf(existing.units) + units;
+      if (userNazwa) existing.n = userNazwa;
+      // Zachowaj cur jeśli ustawione
+      if (stockCur) existing.cur = stockCur;
+    } else {
+      A.push({ id: Date.now().toString(), type: tg, ticker, units, mv: 0, wynajem: 0, konto, n, cur: stockCur });
+    }
+    portHistory.push({
+      id: uuid(), op: "buy", type: tg, ticker, n, units, mv: 0, wynajem, konto,
       ts: new Date().toISOString(),
     });
   }
+
   if (portHistory.length > 500) portHistory = portHistory.slice(-500);
 
   await saveA();
-  sS(); // zapisz portHistory do settings (debounced)
+  sS();
   closeAM();
   rA();
   try { localStorage.removeItem(PRICE_CACHE_KEY); } catch (e) {}
@@ -218,6 +232,6 @@ async function delA(id) {
   if (!ok) return;
   A = A.filter((a) => a.id !== id);
   await saveA();
-  sS(); // aktualizuj _curMap i _wynajemMap w settings
+  sS();
   rA();
 }
