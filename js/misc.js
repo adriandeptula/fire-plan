@@ -38,6 +38,7 @@ async function clearAll() {
   portHistory = [];
   loans = [];
   liabilities = [];
+  // blankS() zdefiniowane w auth.js — jedyne źródło domyślnych wartości S
   S = blankS();
 
   // apS() musi być PRZED zapisem — sS/saveSettingsNow wywołują colS()
