@@ -1,4 +1,3 @@
-
 // ── MONTHLY CALC ──
 function rMies() {
   const sel = g("mmies");
@@ -20,10 +19,7 @@ function rIncs() {
   if (!el) return;
   el.innerHTML = incs
     .map(
-      (
-        s,
-        i,
-      ) => `<div style="display:flex;gap:7px;align-items:center;margin-bottom:7px">
+      (s, i) => `<div style="display:flex;gap:7px;align-items:center;margin-bottom:7px">
     <input class="fi" placeholder="Nazwa (np. Wypłata A)" value="${s.n}" oninput="incs[${i}].n=this.value;cMies()" style="flex:1;min-width:0">
     <div style="position:relative;flex-shrink:0;width:110px"><input class="fi" type="number" placeholder="0" value="${s.k}" oninput="incs[${i}].k=this.value;cMies()" style="padding-right:26px"><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mu);pointer-events:none">zł</span></div>
     ${incs.length > 1 ? `<button class="del" onclick="rmInc(${i})">✕</button>` : ""}
@@ -122,18 +118,13 @@ function rHist() {
   }
   const cy = sel.value || yrs[0];
   sel.innerHTML = yrs
-    .map(
-      (y) =>
-        `<option value="${y}" ${y === cy ? "selected" : ""}>${y}</option>`,
-    )
+    .map((y) => `<option value="${y}" ${y === cy ? "selected" : ""}>${y}</option>`)
     .join("");
   const yd = H.filter((h) => h.k.startsWith(cy)).sort((a, b) =>
     a.k.localeCompare(b.k),
   );
   const totR = yd.reduce((s, h) => s + h.d, 0),
     avgM = yd.length ? totR / yd.length : 0;
-  const st = pf(S.wyd) + pf(S.roz) + getTotalLiabilities() / 12,
-    pi = Math.max(0, 100 - (pf(S.pw) || 10) - (pf(S.pr) || 10));
   g("hkpi").innerHTML =
     `<div style="background:var(--s);border:1px solid var(--b);border-radius:5px;padding:8px 12px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mu);margin-bottom:3px">SUMA ${cy}</div><div style="font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--go)">${PLN(totR)}</div></div><div style="background:var(--s);border:1px solid var(--b);border-radius:5px;padding:8px 12px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mu);margin-bottom:3px">ŚREDNIA</div><div style="font-family:'Lora',serif;font-size:16px;font-weight:600">${PLN(avgM)}</div></div><div style="background:var(--s);border:1px solid var(--b);border-radius:5px;padding:8px 12px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mu);margin-bottom:3px">MIESIĘCY</div><div style="font-family:'Lora',serif;font-size:16px;font-weight:600">${yd.length}/12</div></div>`;
   const rows = Array.from({ length: 12 }, (_, i) => {
