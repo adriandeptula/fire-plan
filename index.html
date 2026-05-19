@@ -460,14 +460,17 @@
             </div>
           </div>
           <div id="p-extra"></div>
-          <div class="tb" style="margin-bottom: 12px">
-            <button class="tbn on" id="pt-tab-assets" onclick="swPT('assets')">
-              Aktywa
-            </button>
-            <button class="tbn" id="pt-tab-hist" onclick="swPT('hist')">
-              Historia portfela
-            </button>
-          </div>
+        <div class="tb" style="margin-bottom: 12px">
+          <button class="tbn on" id="pt-tab-assets" onclick="swPT('assets')">
+            Aktywa
+          </button>
+          <button class="tbn" id="pt-tab-hist" onclick="swPT('hist')">
+            Historia portfela
+          </button>
+          <button class="tbn" id="pt-tab-perf" onclick="swPT('perf')">
+            Wyniki
+          </button>
+        </div>
           <div id="pt-assets">
             <div style="margin-bottom: 14px">
               <div class="tw" id="at"></div>
@@ -488,6 +491,9 @@
           </div>
           <div id="pt-hist" style="display: none">
             <div class="tw" id="port-hist-tbl"></div>
+          </div>
+          <div id="pt-perf" style="display: none">
+            <div id="port-perf-tbl"></div>
           </div>
         </div>
 
@@ -1987,6 +1993,7 @@
   <script src="js/chat.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/portfel-tabs.js"></script>
+  <script src="js/port-performance.js"></script>
   <script src="js/misc.js"></script>
   <script src="js/init.js"></script>
   </body>
