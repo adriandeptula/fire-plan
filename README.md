@@ -33,6 +33,7 @@
 |--------|------|
 | 📊 **Dashboard FIRE** | Postęp, wiek FIRE, portfel w wieku 60 lat, wypłaty dziś i nominalne |
 | 💼 **Portfel** | Krypto live (CoinGecko), ETF/akcje live (Yahoo Finance via Cloudflare Worker) |
+| 📈 **Wyniki portfela** | Śledzenie MoM/YoY — zmiana wartości, zysk rynkowy, separatory roczne |
 | 📅 **Symulator FIRE** | Trójfazowa symulacja: akumulacja → wypłaty → IKE odblokowane |
 | 💰 **Budżet** | Planowanie wpłat, limity IKE, strategie po FIRE (4 opcje) |
 | 🏠 **Nieruchomości** | Wartość rynkowa + wynajem netto (ryczałt 8,5%) |
@@ -40,6 +41,30 @@
 | 🤖 **AI Doradca** | Claude Sonnet zna Twój portfel i plan FIRE |
 | 👁 **Incognito** | Zamazuje wartości — do używania w miejscach publicznych |
 | 📊 **Wykres portfela** | Interaktywny SVG: IKE / Poza IKE / Łącznie, hover tooltip, 3 fazy |
+
+---
+
+## 📈 Śledzenie wyników portfela (v19)
+
+Zakładka **Wyniki** w sekcji Portfel pokazuje historię miesięcznych wyników:
+
+**Karty KPI:**
+- Portfel FIRE teraz (IKE + Poza IKE)
+- YTD — zmiana od początku bieżącego roku
+- Od początku śledzenia — łączna zmiana od pierwszego snapshotu
+
+**Tabela miesięczna:**
+- Minibarek wizualizujący wartość portfela w skali historycznej
+- **Zmiana MoM** = pełna zmiana (wpłaty + rynek)
+- **Zysk rynkowy** = Zmiana MoM − planowana wpłata (`S.inv`) — przybliżony zysk z wyceny
+- **YoY %** = porównanie z tym samym miesiącem rok temu
+- Separatory roczne z podsumowaniem "Łącznie YYYY"
+- Bieżący miesiąc podświetlony złotym tłem
+
+**Zbieranie danych:**
+- Jeden snapshot na miesiąc, zapisywany automatycznie przy logowaniu (po załadowaniu cen)
+- Max 72 snapshoty (6 lat), przechowywane w `settings.data.portSnapshots`
+- Przycisk "Aktualizuj snapshot" pozwala odświeżyć wycenę w ciągu miesiąca
 
 ---
 
@@ -139,7 +164,7 @@ AI:          Claude Sonnet via Cloudflare Worker (klucz ANTHROPIC_KEY w Cloudfla
 │   └── styles.css      # Wszystkie style
 └── js/
     ├── config.js       # Supabase config, TICKER_NAMES, stałe
-    ├── state.js        # Globalny stan aplikacji (A, S, H, loans…)
+    ├── state.js        # Globalny stan aplikacji (A, S, H, portSnapshots, loans…)
     ├── helpers.js      # Funkcje pomocnicze (PLN, pf, gTP…)
     ├── model.js        # Symulacja FIRE (sim()), calcIkePostFire()
     ├── settings.js     # Odczyt/zapis ustawień, colS(), apS()
@@ -156,10 +181,11 @@ AI:          Claude Sonnet via Cloudflare Worker (klucz ANTHROPIC_KEY w Cloudfla
     ├── monthly.js      # Kalkulator miesięczny, historia
     ├── nav.js          # Nawigacja (gn(), toggleMore())
     ├── chat.js         # AI Agent (sChat(), Worker URL)
-    ├── portfel-tabs.js # Zakładki portfela, historia transakcji
+    ├── portfel-tabs.js # Zakładki portfela (assets/hist/perf), historia transakcji
+    ├── port-performance.js # Śledzenie wyników MoM/YoY (savePortSnapshot, rPortPerf)
     ├── tooltips.js     # Pozycjonowanie tooltipów
     ├── dialogs.js      # Niestandardowe dialogi (dlgAlert, dlgConfirm)
-    ├── misc.js         # clearAll()
+    ├── misc.js         # clearAll(), toggleIncognito(), initIncognito()
     └── init.js         # DOMContentLoaded, sesja Supabase
 ```
 
@@ -198,7 +224,7 @@ ANTHROPIC_KEY = "sk-ant-..."
 ### Supabase
 Tabele:
 - `assets` — aktywa portfela
-- `settings` — wszystkie ustawienia + historia (JSON blob)
+- `settings` — wszystkie ustawienia + historia (JSON blob), w tym `portSnapshots`
 
 > **Uwaga przy tworzeniu projektu od zera:** po utworzeniu tabeli `assets` trzeba ręcznie dodać dwie kolumny których Supabase nie tworzy domyślnie:
 > ```sql
@@ -241,6 +267,7 @@ Tabele:
 - [x] AI Doradca (Claude Sonnet via Cloudflare Worker)
 - [x] Tryb incognito (zamazane wartości)
 - [x] Wykres portfela (SVG interaktywny, 3 fazy)
+- [x] Śledzenie wyników portfela MoM/YoY (zakładka Wyniki)
 - [ ] Dual-login (partner + partnerka osobno)
 - [ ] PPK (Pracownicze Plany Kapitałowe)
 - [ ] Eksport do PDF / raport miesięczny
