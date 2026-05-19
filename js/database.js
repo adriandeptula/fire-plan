@@ -41,6 +41,7 @@ async function loadDB() {
       const d = s.data;
       if (d.H) { H = d.H; delete d.H; }
       if (d.portHistory) { portHistory = d.portHistory; delete d.portHistory; }
+      if (d.portSnapshots) { portSnapshots = d.portSnapshots; delete d.portSnapshots; }
       if (d.loans) { loans = d.loans; delete d.loans; }
       if (d.liabilities) { liabilities = d.liabilities; delete d.liabilities; }
       if (d._savedIncs) { incs = d._savedIncs; delete d._savedIncs; }
@@ -120,6 +121,7 @@ async function sS() {
             ...S,
             H,
             portHistory,
+            portSnapshots,
             loans,
             liabilities,
             _wynajemMap: A.filter((a) => a.wynajem).map((a) => [a.id, a.wynajem]),
@@ -150,6 +152,7 @@ async function saveSettingsNow() {
           ...S,
           H,
           portHistory,
+          portSnapshots,
           loans,
           liabilities,
           _wynajemMap: A.filter((a) => a.wynajem).map((a) => [a.id, a.wynajem]),
