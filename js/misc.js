@@ -2,25 +2,25 @@
 
 // ── INCOGNITO MODE ──
 function toggleIncognito() {
-  const on = document.body.classList.toggle("incognito");
-  try { localStorage.setItem("fire-incognito", on ? "1" : "0"); } catch (e) {}
-  const btn = g("incog-btn");
+  const on = document.body.classList.toggle('incognito');
+  try { localStorage.setItem('fire-incognito', on ? '1' : '0'); } catch(e) {}
+  const btn = g('incog-btn');
   if (btn) {
-    btn.textContent = on ? "🙈" : "👁";
-    btn.title = on ? "Wyłącz tryb incognito" : "Włącz tryb incognito";
+    btn.textContent = on ? '🙈' : '👁';
+    btn.title = on ? 'Wyłącz tryb incognito' : 'Włącz tryb incognito';
   }
 }
 
 function initIncognito() {
   try {
-    const on = localStorage.getItem("fire-incognito") === "1";
-    document.body.classList.toggle("incognito", on);
-    const btn = g("incog-btn");
+    const on = localStorage.getItem('fire-incognito') === '1';
+    document.body.classList.toggle('incognito', on);
+    const btn = g('incog-btn');
     if (btn) {
-      btn.textContent = on ? "🙈" : "👁";
-      btn.title = on ? "Wyłącz tryb incognito" : "Włącz tryb incognito";
+      btn.textContent = on ? '🙈' : '👁';
+      btn.title = on ? 'Wyłącz tryb incognito' : 'Włącz tryb incognito';
     }
-  } catch (e) {}
+  } catch(e) {}
 }
 
 async function clearAll() {
@@ -36,16 +36,18 @@ async function clearAll() {
   A = [];
   H = [];
   portHistory = [];
+  portSnapshots = [];
   loans = [];
   liabilities = [];
   // blankS() zdefiniowane w auth.js — jedyne źródło domyślnych wartości S
   S = blankS();
 
-  // apS() musi być PRZED zapisem — sS/saveSettingsNow wywołują colS()
-  // które odczytuje formularze. Jeśli formularze mają stare wartości,
-  // stare dane wracają do S przed zapisem do Supabase.
+  // apS() musi byc PRZED zapisem — sS/saveSettingsNow wywoluja colS()
+  // ktore odczytuje formularze. Jesli formularze maja stare wartosci,
+  // stare dane wracaja do S przed zapisem do Supabase.
   apS();
   await saveA();
+  // saveSettingsNow() zamiast sS() — gwarantuje zapis przed zamknieciem strony
   await saveSettingsNow();
   rA();
 }
