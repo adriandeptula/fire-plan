@@ -39,7 +39,7 @@ Krypto:      CoinGecko API (publiczne, bez klucza)
     ├── model.js        # sim(), gP(), calcIkePostFire(), getMRI_IKE(), getMRP(), getINF()
     ├── settings.js     # colS(), apS(), SM{}, uIP(), uPI(), uIkeStrat(), uIkeNetDisplay()
     ├── database.js     # loadDB(), saveA(), sS() (debounced Supabase upsert)
-    ├── auth.js         # doLogin(), doLogout(), onLogin()
+    ├── auth.js         # doLogin(), doLogout(), onLogin(), blankS()
     ├── prices-client.js # refP(), loadCachedPrices(), getETFCur(), PRICE_CACHE_KEY
     ├── assets-table.js # rATbl(), groupAssets(), fmtPrice(), fmtUnits(), paginate(), renderPag()
     ├── assets-modal.js # openAM(), closeAM(), editA(), saveAsset(), onTC(), PAG{}
@@ -52,8 +52,8 @@ Krypto:      CoinGecko API (publiczne, bez klucza)
     ├── nav.js          # gn(), toggleMore(), closeMore()
     ├── chat.js         # sChat(), WORKER_URL, SYS (system prompt)
     ├── chart.js        # renderChart(), rWykres(), simChartData(), toggleChartSeries()
-    ├── portfel-tabs.js # swPT(), rPortHist() — obsługuje 3 zakładki: assets / hist / perf
-    ├── port-performance.js # savePortSnapshot(), rPortPerf() — śledzenie wyników MoM/YoY
+    ├── portfel-tabs.js # swPT(), rPortHist() — 3 zakładki: assets / hist / perf
+    ├── port-performance.js # Śledzenie wyników: savePortSnapshot, rPortPerf, openSnapModal, saveSnap, deleteSnap
     ├── tooltips.js     # initTooltips()
     ├── dialogs.js      # dlgAlert(), dlgConfirm()
     ├── misc.js         # clearAll(), toggleIncognito(), initIncognito()
@@ -65,89 +65,74 @@ Krypto:      CoinGecko API (publiczne, bez klucza)
 ## Globalny stan (state.js)
 
 ```javascript
-let A = []              // Aktywa: [{id, type, ticker, units, mv, wynajem, konto, n, cur}]
+let A = []              // Aktywa
 let S = { ... }         // Ustawienia uzytkownika (sync z Supabase)
 let H = []              // Historia miesieczna kalkulatora domowego
-let portHistory = []    // Historia transakcji portfela (max 500 wpisow)
-let portSnapshots = []  // Miesięczne snapshoty portfela — śledzenie wyników (max 72)
-let loans = []          // Kredyty wewnetrzne miedzy kontami
-let liabilities = []    // Zobowiazania zewnetrzne (kredyty hipoteczne itp.)
-let incs = [...]        // Zrodla dochodu w kalkulatorze miesiecznym
-let prices = {}         // Cache cen {ticker: cena, EURPLN, USDPLN}
-let chatH = []          // Historia rozmowy z AI (max 10 par = CHAT_MAX_PAIRS)
-let user = null         // Zalogowany uzytkownik Supabase
-let sT = null           // Timer debounce dla sS()
+let portHistory = []    // Historia transakcji portfela (max 500)
+let portSnapshots = []  // Miesięczne snapshoty portfela — wyniki MoM/YoY (max 72)
+let loans = []
+let liabilities = []
+let incs = [...]
+let prices = {}
+let chatH = []
+let user = null
+let sT = null
 ```
 
 ### Obiekt S — wszystkie pola
 
 ```javascript
 S = {
-  wt, wf,           // wiek obecny, docelowy wiek FIRE (poglądowy)
-  wy,               // cel wyplaty dzis (zl/mies., realna sila nabywcza)
-  inv,              // miesieczna kwota na FIRE
-  invInf,           // '1' = wplata rosnie z inflacja co roku
-
-  i1, i2,           // roczne limity IKE konto 1 i 2 (zl/rok)
-  i1wpl, i2wpl,     // juz wplacono w tym roku
-  ip,               // % limitu IKE faktycznie wplacany (0-100)
-  ikeRate,          // zwrot na IKE %/rok (brutto, bez Belki)
-
-  brutto,           // oczekiwany zwrot brutto %/rok
-  belka,            // podatek Belki (domyslnie 19%)
-  inf,              // stopa inflacji %/rok
-  calcBase,         // 'brutto' | 'netto' — podstawa obliczen poza IKE
-
-  wyd, roz,         // wydatki zyciowe, rozrywka (zl/mies.)
-  pw, pr,           // % nadwyzki na wakacje, rezerwe
-
-  ks, kr, kn, krt,  // kredyt: saldo, rata, nazwa, oprocentowanie (legacy)
-
-  ikeStrat,         // 'stop' | 'A' | 'B' | 'C' | 'D'
-  ikePostInvA,      // A: roczna kwota z portfela poza IKE (zl/rok)
-  ikePostInvB1,     // B: % limitu IKE konto 1, z portfela
-  ikePostInvB2,     // B: % limitu IKE konto 2, z portfela
-  ikePostInvC,      // C: roczna kwota ze zrodla zewnetrznego (zl/rok)
-  ikePostInvD1,     // D: % limitu IKE konto 1, zewnetrzne
-  ikePostInvD2,     // D: % limitu IKE konto 2, zewnetrzne
+  wt, wf, wy, inv, invInf,
+  i1, i2, i1wpl, i2wpl, ip, ikeRate,
+  brutto, belka, inf, calcBase,
+  wyd, roz, pw, pr,
+  ks, kr, kn, krt,
+  ikeStrat,
+  ikePostInvA, ikePostInvB1, ikePostInvB2,
+  ikePostInvC, ikePostInvD1, ikePostInvD2,
 }
 ```
 
-### Struktura portSnapshots[]
+### Struktura portSnapshots[] (v20)
 
 ```javascript
 portSnapshots = [{
-  id: uuid(),           // unikalny identyfikator
-  ts: ISO string,       // timestamp zapisu
-  ym: "2025-05",        // klucz rok-miesiąc (deduplicacja — 1 na miesiąc)
-  fire: Number,         // gFirePortfel() w chwili zapisu
-  ike: Number,          // gIKE()
-  poza: Number,         // gPoza()
-  nier: Number,         // gNierSprzedaz()
-  inv: Number,          // pf(S.inv) — planowana wpłata miesięczna w chwili zapisu
+  id:             uuid(),        // unikalny identyfikator
+  ts:             ISO string,    // timestamp zapisu (UTC)
+  ym:             "2025-05",     // klucz rok-miesiąc — deduplicacja 1/miesiąc
+  fire:           Number,        // gFirePortfel() — IKE + Poza IKE
+  ike:            Number,        // gIKE()
+  poza:           Number,        // gPoza()
+  nier:           Number,        // gNierSprzedaz()
+  inv:            Number,        // S.inv w chwili auto-snapshotu (tylko referencja)
+  deposits:       Number,        // REALNE wpłaty w tym miesiącu (edytowalne)
+  depositsEdited: Boolean,       // true = użytkownik ręcznie ustawił deposits
 }]
-// Max 72 snapshoty (6 lat). Zapisywane w settings.data.portSnapshots.
+// Max 72 (6 lat). Zapisywane w settings.data.portSnapshots.
 // Auto-zapis raz na miesiąc w onLogin() po await refP().
+// deposits domyślnie = inv, depositsEdited = false.
+// Użytkownik edytuje przez ✎ w tabeli Wyniki → depositsEdited = true.
 ```
 
-### Zasada — dodawanie nowego pola S (checklist)
+### "Zysk rynkowy" — metodologia
 
-Przy kazdy nowym polu zaktualizuj WSZYSTKIE cztery miejsca:
+```
+Zysk rynkowy = (curr.fire − prev.fire) − deposits
+```
 
-1. `state.js` — domyslna wartosc w `let S = {...}`
-2. `misc.js clearAll()` — ta sama wartosc domyslna
-3. `auth.js doLogout()` — ta sama wartosc domyslna
-4. `settings.js SM{}` — mapowanie `"html-id": "klucz"` (jesli jest input HTML)
+- Używa `_snapDeposits(snap)` dla backward compat (stare snapshoty bez deposits)
+- `deposits = inv` gdy `depositsEdited = false` → oznaczone "szac." w tabeli
+- Dokładny gdy użytkownik wpisze realne wpłaty przez modal
 
-### Zasada — dodawanie nowej tablicy stanu (portHistory, loans, itd.)
+### Zasada — dodawanie nowej tablicy stanu
 
-Przy każdej nowej tablicy zaktualizuj WSZYSTKIE pięć miejsc:
-
+Przy każdej nowej tablicy zaktualizuj 5 miejsc:
 1. `state.js` — `let nazwaTab = []`
 2. `auth.js doLogout()` — `nazwaTab = []`
 3. `misc.js clearAll()` — `nazwaTab = []`
 4. `database.js loadDB()` — `if (d.nazwaTab) { nazwaTab = d.nazwaTab; delete d.nazwaTab; }`
-5. `database.js sS()` i `saveSettingsNow()` — dodaj `nazwaTab,` do obiektu `data`
+5. `database.js sS()` + `saveSettingsNow()` — dodaj `nazwaTab,` do data
 
 ---
 
@@ -157,38 +142,16 @@ Przy każdej nowej tablicy zaktualizuj WSZYSTKIE pięć miejsc:
 |------|------|--------|
 | `etf` | ETF (XTB) | Yahoo Finance x kurs walutowy |
 | `stock` | Akcje | Yahoo Finance x kurs walutowy |
-| `crypto` | Kryptowaluty | CoinGecko (odpowiedz juz w PLN) |
+| `crypto` | Kryptowaluty | CoinGecko (PLN) |
 | `manual` | Reczne (obligacje EDO, inne) | a.mv (PLN) |
 | `nier-sprzedaz` | Nieruchomosc — wartosc rynkowa | a.mv (PLN) |
 | `nier-wynajem` | Nieruchomosc — wynajem | a.wynajem zl/mies. brutto |
-
-**Kursy ETF — getETFCur(ticker) w prices-client.js:**
-- suffix `.DE` => EUR x EURPLN
-- suffix `.UK` lub `.L` => USD x USDPLN
-- Wyjatki (priorytet nad suffixem): EGLN.UK, EGLN.L => EUR
-
-**Akcje:** kurs wg a.cur ('USD' / 'EUR' / 'PLN')
-
----
-
-## Tabela aktywow (assets-table.js)
-
-**groupAssets(A)** — grupuje po kluczu `type:ticker:konto`.
-Wyjatki: nier-sprzedaz i nier-wynajem grupowane osobno, z polami `totalMv`/`totalWynajem` i `members[]`.
-
-**rATbl(id, del)** — renderuje tabele. `del=true` = przyciski edit/delete (widok Portfel).
-Nier-grupy z count > 1 otwieraja `openNierModal()`. count === 1 = bezposredni edit.
-
-**fmtPrice(a)** — cena w prawidlowej walucie. ETF: getETFCur() => "123.45 USD" / "98.20 EUR".
-Akcje: a.cur. Pozostale: PLN(p).
-
-**fmtUnits(u)** — ilosc bez trailing zeros, bez "szt." (szt. jest w naglowku kolumny).
 
 ---
 
 ## Zakładki portfela (portfel-tabs.js)
 
-`swPT(tab)` obsługuje 3 zakładki:
+`swPT(tab)` — 3 zakładki:
 - `assets` — tabela aktywów (domyślna)
 - `hist` — historia transakcji (`rPortHist()`)
 - `perf` — wyniki portfela MoM/YoY (`rPortPerf()`)
@@ -197,232 +160,154 @@ Akcje: a.cur. Pozostale: PLN(p).
 
 ## Śledzenie wyników portfela (port-performance.js)
 
-### savePortSnapshot(force = false)
+### Funkcje
 
-Zapisuje snapshot bieżącego portfela:
-- Wywołana automatycznie w `onLogin()` po `await refP()` — raz na miesiąc (idempotentna)
-- `force=true` — nadpisuje istniejący snapshot dla bieżącego miesiąca
-- Pomija jeśli `gFirePortfel() === 0` i `force=false`
-- Przechowuje: fire, ike, poza, nier, inv (plan wpłat w chwili snapshotu)
-- Max 72 snapshoty — przycinanie przez sort + slice
+```javascript
+_snapDeposits(snap)        // backward compat: deposits ?? inv ?? 0
+savePortSnapshot(force)    // auto-snapshot raz na miesiąc (onLogin po refP)
+openSnapModal(id = null)   // otwiera modal: null = dodaj, id = edytuj
+closeSnapModal()           // zamyka modal
+saveSnap()                 // zapisuje snapshot z modala (upsert po ym)
+deleteSnap(id)             // usuwa snapshot po potwierdzeniu
+rPortPerf()                // renderuje zakładkę Wyniki
+```
 
-### rPortPerf()
-
-Renderuje zakładkę "Wyniki" w sekcji Portfel:
-- 3 karty KPI: portfel teraz / YTD bieżący rok / od początku śledzenia
-- Tabela miesięczna z separatorami rocznymi (wiersz "Łącznie YYYY")
-- Kolumny: Miesiąc (z minibarkiem), Portfel FIRE (+ IKE), Zmiana MoM, Zysk rynkowy, YoY %
-- Bieżący miesiąc podświetlony tłem `--gob`
-- Przycisk "Aktualizuj snapshot" (`force=true`)
-
-### Metodologia kolumn
+### Tabela Wyniki — 7 kolumn
 
 | Kolumna | Formuła | Uwagi |
 |---------|---------|-------|
-| Zmiana MoM | `curr.fire − prev.fire` | Pełna zmiana: wpłaty + rynek |
-| Zysk rynkowy | `MoM − curr.inv` | Przybliżony: zakłada wpłaty zgodne z planem |
-| YoY % | `(curr − yearAgo) / yearAgo` | Porównanie z tym samym miesiącem rok temu |
+| Miesiąc | ym → MO[] + rok | minibar proporcjonalny do maxFire |
+| Portfel FIRE | curr.fire | + IKE breakdown |
+| Zmiana MoM | curr.fire − prev.fire | pełna zmiana |
+| Wpłaty | `_snapDeposits(curr)` | szary + "szac." gdy !depositsEdited |
+| Zysk rynkowy | MoM − Wpłaty | czysty zysk z rynku |
+| YoY % | (curr − yearAgo) / yearAgo | ten sam miesiąc rok temu |
+| Akcje | ✎ edit + ✕ delete | openSnapModal(id) / deleteSnap(id) |
 
-**Separatory roczne:** Przy przejściu między latami w tabeli wstawia wiersz "Łącznie YYYY" pokazujący zmianę od ostatniego snapshotu poprzedniego roku do ostatniego snapshotu danego roku.
+### Modal snapshotu (snap-modal w index.html)
 
-**YTD:** Zmiana od ostatniego snapshotu z poprzedniego roku do `gFirePortfel()` teraz.
+Pola:
+- `snap-id` (hidden) — id edytowanego snapshotu lub pusty dla nowego
+- `snap-ym` (select) — tylko przeszłe miesiące bez istniejących (add) / locked (edit)
+- `snap-fire` — wartość portfela FIRE łącznie
+- `snap-ike` / `snap-poza` — opcjonalny podział (poza = fire − ike jeśli puste)
+- `snap-deposits` — realne wpłaty (domyślnie S.inv)
+
+### Separatory roczne
+
+Wstawiane przy zmianie roku w malejącej tabeli:
+```
+colspan(2) label "Łącznie YYYY" | gain PLN | colspan(4) gain% | —
+= 2+1+4 = 7 kolumn ✓
+```
 
 ---
 
 ## Model symulacji FIRE (model.js)
 
-### sim(params) => wynik
-
-Wejscie: inv, ike, start, iS, wy, wiek, wynajemNetto, ikeStrat, ikePostInv*, i1Limit, i2Limit, invInf
-
-Wyjscie:
-```javascript
-{ yr, fa, fy,         // lata do FIRE, wiek FIRE, rok FIRE
-  tot, iF, pF,        // portfel lacznie/IKE/pozaIKE przy FIRE
-  cy,                 // rok CoastFIRE (null jesli nieosiagniety)
-  i60, p60, m60,      // portfele i wyplata miesieczna od 60 lat
-  G,                  // cel nominalny (tylko do UI)
-  wyAtFIRE,           // nominalna wyplata przy FIRE
-  infTotal,           // skumulowana inflacja jako ulamek
-  wynajemNetto }
-```
-
 ### Trigger FIRE (v17 — oparty wylacznie na pP)
-
-IKE jest zablokowane do 60. r.z. i nie moze pokryc wyplat w fazie 2:
 
 ```javascript
 const potrzebaBase = Math.max(0, wyNom - wynajemNetto);
 if (potrzebaBase === 0 || pP >= potrzebaBase) {
-  // subsymulacja fazy 2: czy pP nie zejdzie do zera przed 60. r.z.?
-  // + weryfikacja: m60 >= wyNom x inflAt60
-  if (wystarczy) break; // FIRE osiagniety
+  // subsymulacja fazy 2 + weryfikacja m60
+  if (wystarczy) break;
 }
 ```
 
-**G — wylacznie do UI** (pasek postepu, kafelki, CoastFIRE). Nie decyduje o triggerze:
-```
-G = max(0, wy - wynajemNetto) x (1+inf)^yr x 12 x 25
-```
+G = max(0, wy − wynajemNetto) × (1+inf)^yr × 12 × 25 — tylko do UI
 
 ### Trzy fazy
 
-**Faza 1 — Akumulacja:** pI i pP rosna o wplaty i odsetki co miesiac.
-**Faza 2 — Wyplaty (FIRE -> 60):** wyplaty z pP rosna z inflacja (portWithdrawBase x inflFactor). pI rosnie + opcjonalne wplaty wg strategii IKE.
-**Faza 3 — Po 60 (IKE odblokowane):** m60 = (i60+p60) x 4%/12 + wynajemAt60
-
-### Stopy zwrotu
-
-- getMRI_IKE() — ikeRate/100/12 (zawsze brutto)
-- getMRP() — brutto/100/12 (tryb brutto) lub brutto*(1-belka)/100/12 (tryb netto)
-- getINF() — inf/100
+- **Faza 1 Akumulacja:** pI i pP rosną o wplaty i odsetki
+- **Faza 2 Wypłaty (FIRE→60):** wypłaty z pP rosną z inflacją, pI rośnie + opcjonalne wpłaty wg strategii IKE
+- **Faza 3 Po 60:** m60 = (i60+p60) × 4%/12 + wynajemAt60
 
 ---
 
 ## Strategie IKE po FIRE
 
-| Kod | Zrodlo | Kwota | fromCapital |
-|-----|--------|-------|-------------|
-| stop | — | Brak wplat | — |
-| A | Portfel poza IKE | ikePostInvA zl/rok (stala) | true |
-| B | Portfel poza IKE | (i1*B1% + i2*B2%) x inflFactor / 12 | true |
-| C | Zrodlo zewnetrzne | ikePostInvC zl/rok (stala) | false |
-| D | Zrodlo zewnetrzne | (i1*D1% + i2*D2%) x inflFactor / 12 | false |
-
-fromCapital=true => kwota odejmowana od pP w danym miesiacu.
-Dla B i D limity IKE indeksowane inflacja od momentu FIRE.
-ikePostInvA i ikePostInvC to kwoty ROCZNE — calcIkePostFire() dzieli przez 12.
-
----
-
-## Wykres portfela (chart.js)
-
-- rWykres() / renderChart() — rysuje interaktywny SVG w #chart-wrap
-- simChartData() — dane dla wszystkich 3 faz (uzywa getCachedSim())
-- 3 serie: Lacznie (#d4a843), IKE (#4eb87a), Poza IKE (#5a9ef0)
-- toggleChartSeries(key) — widocznosc serii, stan w localStorage (fire-chart-vis)
-- Hover tooltip z wartosciami dla najblizszego roku
-- Tlo faz: akumulacja (niebieski), wyplaty (czerwony), IKE otwarte (zielony)
-
----
-
-## Incognito mode (misc.js)
-
-- toggleIncognito() — przelacza body.incognito, stan w localStorage (fire-incognito)
-- initIncognito() — przywraca stan przy kazdym logowaniu
-- Checkbox na ekranie logowania (mozna wlaczyc przed zalogowaniem)
-- CSS: wartosci finansowe zamazane filter:blur(8px) + pointer-events:none
-- Przycisk oczu w sidebarze i na ekranie logowania
+| Kod | Źródło | fromCapital |
+|-----|--------|-------------|
+| stop | brak wpłat | — |
+| A | portfel poza IKE, stała kwota | true |
+| B | portfel poza IKE, % limitu × inflFactor | true |
+| C | zewnętrzne, stała kwota | false |
+| D | zewnętrzne, % limitu × inflFactor | false |
 
 ---
 
 ## Workers Cloudflare
 
 ### fire-chat.adrianxdeptula.workers.dev
-- POST {system, messages} => {content}
-- Wymaga Variable: ANTHROPIC_KEY
-- Musi zwracac CORS: Access-Control-Allow-Origin: * + Allow-Methods: POST, OPTIONS
-- Brak CORS => blad TypeError w przegladarce (nie HTTP 4xx/5xx!)
+- POST {system, messages} → {content}
+- Wymaga: ANTHROPIC_KEY w Variables
 
 ### fire-prices.adrianxdeptula.workers.dev
-- GET ?tickers=["SXR8.DE","BTC",...] => {"SXR8.DE": 500.12, "EURPLN": 4.27, ...}
-- Tickers .UK konwertowane do .L przed zapytaniem, mapowane z powrotem po odpowiedzi
-- Cache klienta: 12h w localStorage (PRICE_CACHE_KEY = fire-prices-cache)
+- GET ?tickers=[...] → {ticker: price, EURPLN, USDPLN}
+- Cache klienta: 12h localStorage (PRICE_CACHE_KEY)
 
 ---
 
 ## Baza danych Supabase
 
 ### Tabela assets
-
-Rzeczywisty schemat (zweryfikowany):
-
 ```
-id            text              PRIMARY KEY
-user_id       uuid              REFERENCES auth.users
-type          text              -- etf|stock|crypto|manual|nier-sprzedaz|nier-wynajem
-ticker        text
-units         double precision  -- UWAGA: double precision, nie numeric
-manual_val    double precision  -- a.mv w aplikacji; double precision, nie numeric
-konto         text              -- ike|poza
-nazwa         text              -- a.n w aplikacji
-created_at    timestamptz       -- auto
-cur           text              -- USD|EUR|PLN (tylko dla type=stock); dodana recznie ALTER TABLE
-wynajem_kwota numeric           -- a.wynajem w aplikacji; dodana recznie ALTER TABLE
+id, user_id, type, ticker, units (double), manual_val (double),
+konto, nazwa, created_at, cur (text, ręcznie), wynajem_kwota (numeric, ręcznie)
 ```
-
-> **Tworzenie od zera** — po utworzeniu tabeli `assets` w Supabase uruchom:
-> ```sql
-> ALTER TABLE assets
->   ADD COLUMN IF NOT EXISTS cur           text    DEFAULT NULL,
->   ADD COLUMN IF NOT EXISTS wynajem_kwota numeric DEFAULT 0;
-> ```
-> Supabase tworzy domyslnie id/user_id/type/ticker/units/manual_val/konto/nazwa/created_at.
-> `cur` i `wynajem_kwota` wymagaja recznego dodania.
 
 ### Tabela settings
 ```
-user_id     uuid PK   REFERENCES auth.users
-data        jsonb     -- S + H + portHistory + portSnapshots + loans + liabilities + _savedIncs + _wynajemMap
-updated_at  timestamptz
+user_id PK, updated_at,
+data jsonb: S + H + portHistory + portSnapshots + loans + liabilities + _wynajemMap
 ```
-
-`data` zawiera rowniez `_wynajemMap: [[id, kwota], ...]` — fallback gdy `wynajem_kwota`
-nie zaladuje sie z assets (starsza kompatybilnosc).
 
 ---
 
 ## Kluczowe funkcje
 
 ```javascript
-// Formatowanie
-g(id)               // document.getElementById(id)
-PLN(n)              // "1 234 567 zl" (zaokraglone)
-pct(n)              // "12.3%"
-pf(v)               // parseFloat(v) || 0
-fmtUnits(u)         // "12.5" bez trailing zeros
-fmtPrice(a)         // "123.45 USD" | "98.20 EUR" | "450 zl"
-sT2(id, v)          // skrot: el.textContent = v
+// Port performance
+_snapDeposits(snap)     // backward compat getter dla deposits
+savePortSnapshot(force) // auto-snapshot (onLogin po refP)
+openSnapModal(id)       // modal dodaj/edytuj
+saveSnap()              // zapis z modala
+deleteSnap(id)          // usuń z potwierdzeniem
+rPortPerf()             // render zakładki Wyniki
 
 // Portfel
-gTP()               // suma wszystkich aktywow
-gFirePortfel()      // bez nier-sprzedaz i nier-wynajem
-gIKE() / gPoza()    // IKE / poza IKE (bez nier)
-gNierSprzedaz()     // suma mv nieruchomosci
-getWynajemNetto()   // suma wynajem x 0.915
-getTotalLiabilities() // suma liabilities[] || S.ks (legacy fallback)
-getAV(a)            // wartosc jednego aktywa w PLN
-getIKEM()           // miesieczny limit IKE = (i1+i2)/12 x ip/100
+gTP()                   // suma wszystkich aktywów
+gFirePortfel()          // bez nier
+gIKE() / gPoza()
+gNierSprzedaz()
+getWynajemNetto()
+getTotalLiabilities()
+getAV(a)
+getIKEM()
 
 // Symulacja
-sim(params)         // glowna symulacja FIRE
-gP()                // buduje params do sim() z S i portfela
-getCachedSim()      // sim() z cache (invalidowany przy rA())
-calcIkePostFire(p)  // miesieczna wplata IKE po FIRE => {monthly, fromCapital}
-
-// Wyniki portfela
-savePortSnapshot(force) // zapisuje snapshot biezacego portfela (raz/miesiac)
-rPortPerf()             // renderuje zakładkę Wyniki (MoM/YoY tabela)
+sim(params)
+gP()
+getCachedSim()
+calcIkePostFire(p)
 
 // Render
-rA()                // debounced re-render wszystkiego (80ms)
-_rAImmediate()      // natychmiastowy render, invaliduje _simCacheKey
-
-// Dane
-colS() / apS()      // formularze <=> S
-sS()                // debounced (800ms) zapis do Supabase
+rA()                    // debounced 80ms re-render
+colS() / apS()
+sS()                    // debounced 800ms Supabase save
+saveSettingsNow()       // natychmiastowy zapis
 ```
 
 ---
 
 ## Konwencje
 
-- Brak frameworkow — vanilla JS
-- Zmienne globalne — w state.js, modyfikowane bezposrednio
-- HTML IDs — krotkie historyczne (kw, kf, kr) — nie zmieniaj
-- Style — wylacznie w styles.css, zero znacznikow style w HTML
-- Kolory CSS: --go zloty, --gr zielony, --re czerwony, --bl niebieski, --pu fioletowy, --mu muted
-- Przecinek => kropka: normalizeComma() + globalny listener w auth.js onLogin()
+- Vanilla JS, brak frameworków
+- Zmienne globalne w state.js, modyfikowane bezpośrednio
+- Style wyłącznie w styles.css
+- Kolory: --go złoty, --gr zielony, --re czerwony, --bl niebieski, --pu fioletowy, --mu muted
+- Przecinek→kropka: normalizeComma() + globalny listener w onLogin()
 
 ---
 
@@ -440,30 +325,22 @@ grep -c 'viewport' index.html   # => 1
 
 | Wersja | Zmiana |
 |--------|--------|
-| v19 | Nowa funkcja: śledzenie wyników portfela MoM/YoY — zakładka "Wyniki" w Portfelu |
-| v19 | Nowy plik: js/port-performance.js — savePortSnapshot(), rPortPerf() |
-| v19 | Nowa tablica stanu: portSnapshots[] w state.js (max 72 miesięcy = 6 lat) |
-| v19 | database.js: portSnapshots zapisywane i odczytywane z settings.data |
-| v19 | auth.js: portSnapshots = [] w doLogout(); savePortSnapshot() w onLogin() po refP() |
-| v19 | misc.js: portSnapshots = [] w clearAll() |
-| v19 | portfel-tabs.js: trzecia zakładka 'perf', swPT() obsługuje perf + wywołuje rPortPerf() |
-| v19 | index.html: przycisk zakładki #pt-tab-perf, kontener #pt-perf, script port-performance.js |
-| v19 | Bugfix: ytdPct null-guard w rPortPerf() — crash gdy prevYearSnap.fire === 0 |
-| v19 | Dokumentacja: Claude.md i README.md zaktualizowane o v19 |
-| v18 | Odkryto: kolumny `cur` i `wynajem_kwota` nie istnialy w schemacie Supabase — insert zawsze failowal (blad byl tylko logowany), aktywa nigdy nie trafialy do bazy |
-| v18 | Fix saveA(): blad insert/delete teraz rzuca throw zamiast console.warn — setSS("er") + loadDB() przy bledzie |
-| v18 | Fix saveA(): `cur` nie jest juz w insert rows gdy kolumna nie istnieje; migracja przez _curMap w settings |
-| v18 | Fix doLogout() — pelny sync S z ikeRate, calcBase, ikeStrat, 6x ikePostInv*, invInf |
-| v18 | Refaktoryzacja: blankS() w auth.js — jedno miejsce dla domyslnych wartosci S |
-| v18 | Usunieto dead code: renderMemberRow() w assets-table.js (nigdy niecallowana) |
-| v18 | Fix: podwojny meta viewport w index.html |
-| v18 | Fix: duplikat display:flex w .pag-wrap (styles.css) |
-| v17 | BREAKING: Trigger FIRE oparty wylacznie na pP — IKE nie moze pokryc wyplat fazy 2 |
-| v17 | G wylacznie do UI — zredukowane o wynajemNetto, nie decyduje o triggerze |
-| v17 | Wyplaty fazy 2 indeksowane inflacja (portWithdrawBase x inflFactor) |
-| v17 | Wynajem indeksowany inflacja w fazie 2, m60 i subsymulacjach |
-| v17 | Subsymulacje z pItest + weryfikacja m60check w wieku 60 lat |
+| v20 | Śledzenie wyników: realne wpłaty per miesiąc (deposits, depositsEdited) zamiast szacunku z S.inv |
+| v20 | Modal snapshotu: dodawanie historycznych miesięcy, edycja, usuwanie |
+| v20 | "Zysk rynkowy" = MoM − deposits (realne), nie MoM − inv (plan) |
+| v20 | Backward compat: _snapDeposits() dla snapshots sprzed v20 |
+| v20 | Separator roczny: zaktualizowany colspan dla 7 kolumn (2+1+4=7) |
+| v19 | Nowa funkcja: śledzenie wyników portfela MoM/YoY — zakładka "Wyniki" |
+| v19 | Nowy plik: js/port-performance.js |
+| v19 | Nowa tablica stanu: portSnapshots[] w state.js (max 72 = 6 lat) |
+| v19 | database.js: portSnapshots w settings.data |
+| v19 | auth.js: portSnapshots=[] w doLogout; savePortSnapshot() w onLogin po refP |
+| v19 | misc.js: portSnapshots=[] w clearAll |
+| v19 | portfel-tabs.js: trzecia zakładka perf |
+| v18 | Fix saveA(): throw zamiast console.warn; setSS("er") + loadDB() przy błędzie |
+| v18 | Fix doLogout(): pełny sync S |
+| v18 | Refaktoryzacja: blankS() w auth.js — jedyne źródło domyślnych wartości S |
+| v17 | BREAKING: Trigger FIRE oparty wyłącznie na pP |
+| v17 | Wypłaty fazy 2 indeksowane inflacją |
 | v16 | 4 strategie IKE po FIRE (A/B/C/D + stop) |
-| v16 | Kafelek Portfel w wieku 60 lat na Dashboard |
-| v16 | Kwoty Dashboard: wartosc dzis (realna) + nominalna ponizej |
-| v15 | Ustawienia: slidery => inputy liczbowe; osobne pole IKE rate; calcBase |
+| v15 | Ustawienia: osobne pole IKE rate; calcBase |
