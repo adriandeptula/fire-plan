@@ -36,20 +36,11 @@ async function clearAll() {
   A = [];
   H = [];
   portHistory = [];
+  portSnapshots = [];
   loans = [];
   liabilities = [];
-  S = {
-    wt: "31", wf: "50", wy: "15000", inv: "",
-    i1: "26019", i2: "26019", i1wpl: "0", i2wpl: "0", ip: "100",
-    wyd: "", roz: "", pw: "10", pr: "10",
-    ks: "", kr: "", kn: "", krt: "8",
-    brutto: "7.0", belka: "19", inf: "3.5",
-    ikeRate: "7.0", calcBase: "brutto",
-    ikeStrat: "stop",
-    ikePostInvA: "0", ikePostInvB1: "0", ikePostInvB2: "0",
-    ikePostInvC: "0", ikePostInvD1: "0", ikePostInvD2: "0",
-    invInf: "0",
-  };
+  // blankS() zdefiniowane w auth.js — jedyne źródło domyślnych wartości S
+  S = blankS();
 
   // apS() musi byc PRZED zapisem — sS/saveSettingsNow wywoluja colS()
   // ktore odczytuje formularze. Jesli formularze maja stare wartosci,

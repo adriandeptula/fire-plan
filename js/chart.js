@@ -55,8 +55,10 @@ function simChartData() {
     data.push({ year: nowYear + fireYr, age: fireAge, pI, pP, phase: 'accum' });
 
   // Faza 2: Wypłaty (FIRE → 60)
+  // Wynajem indeksowany od dziś do momentu FIRE — spójnie z model.js
+  const wynajemAtFire = wynajemNetto * Math.pow(1 + inf, fireYr);
   const wyAtFIRE = wy * Math.pow(1 + inf, fireYr);
-  const portWithdrawBase = Math.max(0, wyAtFIRE - wynajemNetto);
+  const portWithdrawBase = Math.max(0, wyAtFIRE - wynajemAtFire);
   const monthsTo60 = Math.max(0, Math.round((60 - fireAge) * 12));
   for (let mm = 1; mm <= monthsTo60; mm++) {
     const inflFactor = Math.pow(1 + inf, Math.floor(mm / 12));
@@ -75,8 +77,10 @@ function simChartData() {
 
   // Faza 3: Po 60. r.ż.
   if (MAX_AGE > 60) {
-    const wynajemAt60nom = wynajemNetto * Math.pow(1 + inf, Math.max(0, 60 - wiek));
-    const portWithdrawAt60base = Math.max(0, simResult.m60 - wynajemAt60nom);
+    // Wynajem indeksowany od dziś do 60. r.ż. (fireYr + y60 = 60 - wiek)
+    const wynajemAt60 = wynajemNetto * Math.pow(1 + inf, Math.max(0, 60 - wiek));
+    // portWithdrawAt60base: z simResult.m60 odejmujemy wynajem — to co musi pokryć portfel
+    const portWithdrawAt60base = Math.max(0, simResult.m60 - wynajemAt60);
     const monthsAfter60 = (MAX_AGE - 60) * 12;
     for (let mm = 1; mm <= monthsAfter60; mm++) {
       const inflFactor = Math.pow(1 + inf, Math.floor(mm / 12));
@@ -147,7 +151,10 @@ function renderChart() {
   const areaPath = key => {
     const by = yS(0).toFixed(1);
     return 'M' + xS(data[0].age).toFixed(1) + ',' + by + ' ' +
-      data.map(d => { const v = key === 'total' ? d.pI + d.pP : key === 'ike' ? d.pI : d.pP; return 'L' + xS(d.age).toFixed(1) + ',' + yS(v).toFixed(1); }).join(' ') +
+      data.map(d => {
+        const v = key === 'total' ? d.pI + d.pP : key === 'ike' ? d.pI : d.pP;
+        return 'L' + xS(d.age).toFixed(1) + ',' + yS(v).toFixed(1);
+      }).join(' ') +
       ' L' + xS(data[data.length - 1].age).toFixed(1) + ',' + by + ' Z';
   };
 
@@ -217,7 +224,6 @@ function renderChart() {
     '<div style="position:relative"><div id="chart-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:9px 13px;font-size:11px;z-index:10;min-width:170px;box-shadow:0 4px 20px rgba(0,0,0,.6)"></div>' +
     '<div style="background:var(--s);border:1px solid var(--b);border-radius:6px;overflow:hidden;padding:12px 8px 6px">' + svg + '</div></div>' + stats;
 
-  // Hover
   const svgEl = g('chart-svg'), hoverZone = g('chart-hover-zone');
   const hoverLine = g('chart-hover-line'), tooltip = g('chart-tooltip');
   if (!svgEl || !hoverZone) return;

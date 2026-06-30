@@ -33,44 +33,33 @@ function sLE(m) {
   e.textContent = m;
   e.classList.add("on");
 }
+function blankS() {
+  return {
+    wt: "31", wf: "50", wy: "15000", inv: "",
+    i1: "26019", i2: "26019", i1wpl: "0", i2wpl: "0", ip: "100",
+    wyd: "", roz: "", pw: "10", pr: "10",
+    ks: "", kr: "", kn: "", krt: "8",
+    brutto: "7.0", belka: "19", inf: "3.5",
+    ikeRate: "7.0", calcBase: "brutto",
+    ikeStrat: "stop",
+    ikePostInvA: "0", ikePostInvB1: "0", ikePostInvB2: "0",
+    ikePostInvC: "0", ikePostInvD1: "0", ikePostInvD2: "0",
+    invInf: "0",
+  };
+}
 async function doLogout() {
   await sb.auth.signOut();
   user = null;
   A = [];
   H = [];
   portHistory = [];
+  portSnapshots = [];
   loans = [];
   liabilities = [];
   chatH = [];
   incs = [{ id: 1, n: "", k: "" }];
   prices = {};
-  S = {
-    wt: "31",
-    wf: "50",
-    wy: "15000",
-    inv: "",
-    i1: "26019",
-    i2: "26019",
-    i1wpl: "0",
-    i2wpl: "0",
-    ip: "100",
-    wyd: "",
-    roz: "",
-    pw: "10",
-    pr: "10",
-    ks: "",
-    kr: "",
-    kn: "",
-    krt: "8",
-    brutto: "7.0",
-    belka: "19",
-    inf: "3.5",
-    ikeRate: "7.0",
-    calcBase: "brutto",
-    ikeStrat: "stop",
-    ikePostInv: "0",
-    invInf: "0",
-  };
+  S = blankS();
   g("APP").style.display = "none";
   g("LS").classList.remove("hide");
   g("lpw").value = "";
@@ -86,6 +75,7 @@ async function onLogin() {
   initIncognito();
   await loadDB();
   await refP();
+  savePortSnapshot(); // auto snapshot raz na miesiąc po załadowaniu cen
   initTooltips();
   document.querySelectorAll(".fi,.fs").forEach((el) =>
     el.addEventListener("change", () => {

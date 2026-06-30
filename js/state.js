@@ -26,15 +26,16 @@ let A = [],
     // IKE po FIRE — nowe 4 opcje (A/B/C/D) + stop
     ikeStrat: "stop",
     ikePostInvA: "0",   // A: roczna kwota z portfela poza IKE
-    ikePostInvB1: "0",  // B: % limitu IKE konto 1 z portfela poza IKE
-    ikePostInvB2: "0",  // B: % limitu IKE konto 2 z portfela poza IKE
+    ikePostInvB1: "0",  // B: % limitu IKE konto 1, z portfela
+    ikePostInvB2: "0",  // B: % limitu IKE konto 2, z portfela
     ikePostInvC: "0",   // C: roczna kwota ze źródła zewnętrznego
-    ikePostInvD1: "0",  // D: % limitu IKE konto 1 ze źródła zewnętrznego
-    ikePostInvD2: "0",  // D: % limitu IKE konto 2 ze źródła zewnętrznego
+    ikePostInvD1: "0",  // D: % limitu IKE konto 1, zewnętrzne
+    ikePostInvD2: "0",  // D: % limitu IKE konto 2, zewnętrzne
     invInf: "0",
   },
   H = [],
   portHistory = [],
+  portSnapshots = [],   // miesięczne snapshoty portfela do śledzenia wyników
   loans = [],
   liabilities = [],
   incs = [{ id: 1, n: "", k: "" }],
