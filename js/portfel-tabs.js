@@ -1,11 +1,13 @@
-
 // ── PORTFEL TABS ──
 function swPT(tab) {
   g("pt-assets").style.display = tab === "assets" ? "block" : "none";
   g("pt-hist").style.display = tab === "hist" ? "block" : "none";
+  g("pt-perf").style.display = tab === "perf" ? "block" : "none";
   g("pt-tab-assets").className = "tbn" + (tab === "assets" ? " on" : "");
   g("pt-tab-hist").className = "tbn" + (tab === "hist" ? " on" : "");
+  g("pt-tab-perf").className = "tbn" + (tab === "perf" ? " on" : "");
   if (tab === "hist") rPortHist();
+  if (tab === "perf") rPortPerf();
 }
 function rPortHist() {
   const el = g("port-hist-tbl");

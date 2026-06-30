@@ -460,14 +460,17 @@
             </div>
           </div>
           <div id="p-extra"></div>
-          <div class="tb" style="margin-bottom: 12px">
-            <button class="tbn on" id="pt-tab-assets" onclick="swPT('assets')">
-              Aktywa
-            </button>
-            <button class="tbn" id="pt-tab-hist" onclick="swPT('hist')">
-              Historia portfela
-            </button>
-          </div>
+        <div class="tb" style="margin-bottom: 12px">
+          <button class="tbn on" id="pt-tab-assets" onclick="swPT('assets')">
+            Aktywa
+          </button>
+          <button class="tbn" id="pt-tab-hist" onclick="swPT('hist')">
+            Historia portfela
+          </button>
+          <button class="tbn" id="pt-tab-perf" onclick="swPT('perf')">
+            Wyniki
+          </button>
+        </div>
           <div id="pt-assets">
             <div style="margin-bottom: 14px">
               <div class="tw" id="at"></div>
@@ -488,6 +491,9 @@
           </div>
           <div id="pt-hist" style="display: none">
             <div class="tw" id="port-hist-tbl"></div>
+          </div>
+          <div id="pt-perf" style="display: none">
+            <div id="port-perf-tbl"></div>
           </div>
         </div>
 
@@ -1785,6 +1791,58 @@
       </main>
     </div>
 
+      <!-- SNAP MODAL -->
+  <div class="mbg" id="snap-modal"
+       onclick="if(event.target===this)closeSnapModal();">
+    <div class="modal">
+      <div class="mt" id="snap-modal-title">Dodaj historyczny miesiąc</div>
+      <div class="ms">Wartość portfela na koniec wybranego miesiąca</div>
+      <input type="hidden" id="snap-id" />
+      <div class="fg">
+        <label class="fl">Miesiąc</label>
+        <select class="fs" id="snap-ym"></select>
+      </div>
+      <div class="fg">
+        <label class="fl">Portfel FIRE — łącznie IKE + Poza IKE (zł)</label>
+        <div class="iu">
+          <input class="fi" type="number" id="snap-fire"
+                 placeholder="np. 450 000" /><span class="iuv">zł</span>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg">
+          <label class="fl">z tego IKE (zł, opcjonalnie)</label>
+          <div class="iu">
+            <input class="fi" type="number" id="snap-ike"
+                   placeholder="np. 150 000" /><span class="iuv">zł</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">z tego Poza IKE (zł, opcjonalnie)</label>
+          <div class="iu">
+            <input class="fi" type="number" id="snap-poza"
+                   placeholder="auto" /><span class="iuv">zł</span>
+          </div>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">Realne wpłaty w tym miesiącu (zł)</label>
+        <div class="iu">
+          <input class="fi" type="number" id="snap-deposits"
+                 placeholder="np. 9 000" /><span class="iuv">zł</span>
+        </div>
+        <div style="font-size:10px;color:var(--mu);margin-top:3px">
+          Kwota faktycznie zainwestowana — służy do wyliczenia czystego
+          zysku rynkowego. Domyślnie ustawiana z planu FIRE (szacunkowa).
+        </div>
+      </div>
+      <div class="ma">
+        <button class="btn bgh" onclick="closeSnapModal()">Anuluj</button>
+        <button class="btn bp" onclick="saveSnap()">Zapisz</button>
+      </div>
+    </div>
+  </div>
+
     <!-- CUSTOM DIALOG -->
     <div class="dlg-bg" id="dlg-bg">
       <div class="dlg" id="dlg-box">
@@ -1987,6 +2045,7 @@
   <script src="js/chat.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/portfel-tabs.js"></script>
+  <script src="js/port-performance.js"></script>
   <script src="js/misc.js"></script>
   <script src="js/init.js"></script>
   </body>

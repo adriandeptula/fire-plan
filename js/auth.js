@@ -1,45 +1,4 @@
 // ── AUTH ──
-
-// Jedyne źródło domyślnych wartości S.
-// Wywoływane przez: doLogout() i clearAll() w misc.js.
-// WAŻNE: auth.js ładowany jest po state.js — blankS() dostępna
-// dopiero po załadowaniu auth.js, więc nie używaj jej w state.js
-// (state.js inicjalizuje S literałem).
-function blankS() {
-  return {
-    wt: "31",
-    wf: "50",
-    wy: "15000",
-    inv: "",
-    i1: "26019",
-    i2: "26019",
-    i1wpl: "0",
-    i2wpl: "0",
-    ip: "100",
-    wyd: "",
-    roz: "",
-    pw: "10",
-    pr: "10",
-    ks: "",
-    kr: "",
-    kn: "",
-    krt: "8",
-    brutto: "7.0",
-    belka: "19",
-    inf: "3.5",
-    ikeRate: "7.0",
-    calcBase: "brutto",
-    ikeStrat: "stop",
-    ikePostInvA: "0",
-    ikePostInvB1: "0",
-    ikePostInvB2: "0",
-    ikePostInvC: "0",
-    ikePostInvD1: "0",
-    ikePostInvD2: "0",
-    invInf: "0",
-  };
-}
-
 async function doLogin() {
   const e = g("lem").value.trim(),
     p = g("lpw").value;
@@ -61,26 +20,40 @@ async function doLogin() {
     g("lbtxt").textContent = "Zaloguj się";
     return;
   }
+  // Zapisz preferencję trybu incognito z formularza logowania
   try {
-    const incogChk = g("incog-check");
-    if (incogChk) localStorage.setItem("fire-incognito", incogChk.checked ? "1" : "0");
-  } catch (e2) {}
+    const incogChk = g('incog-check');
+    if (incogChk) localStorage.setItem('fire-incognito', incogChk.checked ? '1' : '0');
+  } catch(e2) {}
   user = data.user;
   await onLogin();
 }
-
 function sLE(m) {
   const e = g("lerr");
   e.textContent = m;
   e.classList.add("on");
 }
-
+function blankS() {
+  return {
+    wt: "31", wf: "50", wy: "15000", inv: "",
+    i1: "26019", i2: "26019", i1wpl: "0", i2wpl: "0", ip: "100",
+    wyd: "", roz: "", pw: "10", pr: "10",
+    ks: "", kr: "", kn: "", krt: "8",
+    brutto: "7.0", belka: "19", inf: "3.5",
+    ikeRate: "7.0", calcBase: "brutto",
+    ikeStrat: "stop",
+    ikePostInvA: "0", ikePostInvB1: "0", ikePostInvB2: "0",
+    ikePostInvC: "0", ikePostInvD1: "0", ikePostInvD2: "0",
+    invInf: "0",
+  };
+}
 async function doLogout() {
   await sb.auth.signOut();
   user = null;
   A = [];
   H = [];
   portHistory = [];
+  portSnapshots = [];
   loans = [];
   liabilities = [];
   chatH = [];
@@ -93,7 +66,6 @@ async function doLogout() {
   g("lbtn").disabled = false;
   g("lbtxt").textContent = "Zaloguj się";
 }
-
 async function onLogin() {
   g("LS").classList.add("hide");
   g("APP").style.display = "flex";
@@ -103,22 +75,15 @@ async function onLogin() {
   initIncognito();
   await loadDB();
   await refP();
+  savePortSnapshot(); // auto snapshot raz na miesiąc po załadowaniu cen
   initTooltips();
-
-  // Listener change tylko na panelach ustawień i budżetu (nie na modalach)
-  const settingsSelector = [
-    "#p-budzet .fi", "#p-budzet .fs",
-    "#p-budzet-dom .fi", "#p-budzet-dom .fs",
-    "#p-ust .fi", "#p-ust .fs",
-  ].join(",");
-  document.querySelectorAll(settingsSelector).forEach((el) =>
+  document.querySelectorAll(".fi,.fs").forEach((el) =>
     el.addEventListener("change", () => {
       sS();
       rA();
-    })
+    }),
   );
-
-  // Normalize comma → dot we wszystkich number inputach i .fi
+  // Point 5: normalize comma to dot in all number inputs
   document.querySelectorAll("input[type=number],.fi").forEach((el) => {
     el.addEventListener("input", () => {
       if (el.value && el.value.includes(","))
