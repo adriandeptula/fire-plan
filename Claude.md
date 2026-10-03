@@ -31,14 +31,14 @@ Krypto:      CoinGecko API (publiczne, bez klucza)
 ```
 /
 ├── index.html          # Caly layout HTML — panele, modale, nawigacja
-├── styles.css          # Wszystkie style (ciemny motyw, zmienne CSS)
+├── css/styles.css      # Wszystkie style (ciemny motyw, zmienne CSS)
 └── js/
     ├── config.js       # Supabase URL/KEY, TICKER_NAMES, MO[]
     ├── state.js        # Globalny stan: A, S, H, portHistory, portSnapshots, loans, liabilities, incs, prices, chatH
-    ├── helpers.js      # g(), PLN(), pf(), gTP(), getAV(), getETFCur() i inne
+    ├── helpers.js      # g(), PLN(), pf(), esc(), ymNow(), sameId(), gTP(), getAV() i inne
     ├── model.js        # sim(), gP(), calcIkePostFire(), getMRI_IKE(), getMRP(), getINF()
     ├── settings.js     # colS(), apS(), SM{}, uIP(), uPI(), uIkeStrat(), uIkeNetDisplay()
-    ├── database.js     # loadDB(), saveA(), sS() (debounced Supabase upsert)
+    ├── database.js     # loadDB() (retry+dbReady), saveA() (zapis różnicowy), commitAssets(), sS(), saveSettingsNow(), kopia w localStorage
     ├── auth.js         # doLogin(), doLogout(), onLogin(), blankS()
     ├── prices-client.js # refP(), loadCachedPrices(), getETFCur(), PRICE_CACHE_KEY
     ├── assets-table.js # rATbl(), groupAssets(), fmtPrice(), fmtUnits(), paginate(), renderPag()
@@ -125,6 +125,23 @@ Zysk rynkowy = (curr.fire − prev.fire) − deposits
 - `deposits = inv` gdy `depositsEdited = false` → oznaczone "szac." w tabeli
 - Dokładny gdy użytkownik wpisze realne wpłaty przez modal
 
+### ZASADY ZAPISU DO BAZY (v21 — NIE ŁAMAĆ)
+
+Incydent 10.2026: po wznowieniu uśpionego projektu Supabase API zwracało 503 (PGRST002),
+a stary kod potrafił skasować aktywa (`delete` wszystkich + `insert`) lub nadpisać ustawienia pustym stanem.
+
+1. Zapis tylko gdy `dbReady === true` (ustawia go `loadDB()` po PEŁNYM, udanym wczytaniu aktywów i ustawień).
+   Każda funkcja zapisu woła `requireDb()` lub jest chroniona w `database.js`.
+2. `loadDB()` ponawia zapytania (503/sieć), a stan globalny podmienia dopiero na końcu. Zwraca true/false.
+3. NIGDY `delete().eq("user_id")` na całej tabeli. `saveA()` wysyła tylko różnice (INSERT/UPDATE/DELETE po id)
+   względem `dbRows` (to co wiemy, że jest w bazie).
+4. Zmiany aktywów i historii robimy przez `commitAssets(() => { ...mutacja A / portHistory... })` —
+   przy błędzie zapisu stan lokalny jest cofany, a użytkownik dostaje komunikat. Nie wołać `loadDB()` "na ślepo" po błędzie.
+5. Zapis musi być pewny (zobowiązania, pożyczki, historia miesięczna) → `await saveSettingsNow()`; `sS()` jest debounced i nie czeka.
+6. Kopia zapasowa w localStorage (`fire-backup-v1`): po udanym zapisie; gdy baza ma 0 aktywów, a kopia niepustą — pytanie o przywrócenie.
+7. Teksty użytkownika do innerHTML zawsze przez `esc()`.
+8. Supabase Free NIE ma kopii zapasowych — raz na jakiś czas wyeksportuj tabele (Table Editor → Export CSV) albo przejdź na Pro.
+
 ### Zasada — dodawanie nowej tablicy stanu
 
 Przy każdej nowej tablicy zaktualizuj 5 miejsc:
@@ -132,7 +149,7 @@ Przy każdej nowej tablicy zaktualizuj 5 miejsc:
 2. `auth.js doLogout()` — `nazwaTab = []`
 3. `misc.js clearAll()` — `nazwaTab = []`
 4. `database.js loadDB()` — `if (d.nazwaTab) { nazwaTab = d.nazwaTab; delete d.nazwaTab; }`
-5. `database.js sS()` + `saveSettingsNow()` — dodaj `nazwaTab,` do data
+5. `database.js settingsPayload()` — dodaj `nazwaTab,` do zwracanego obiektu (jedno miejsce, używa go sS i saveSettingsNow)
 
 ---
 
@@ -256,6 +273,7 @@ G = max(0, wy − wynajemNetto) × (1+inf)^yr × 12 × 25 — tylko do UI
 id, user_id, type, ticker, units (double), manual_val (double),
 konto, nazwa, created_at, cur (text, ręcznie), wynajem_kwota (numeric, ręcznie)
 ```
+RLS musi być włączone na `assets` i `settings` (polityka: `user_id = auth.uid()`) — klucz anon jest publiczny w config.js.
 
 ### Tabela settings
 ```
@@ -325,6 +343,10 @@ grep -c 'viewport' index.html   # => 1
 
 | Wersja | Zmiana |
 |--------|--------|
+| v21 | FIX KRYTYCZNY: koniec z "delete all + insert" w saveA(); zapis różnicowy; flaga dbReady; retry po 503; commitAssets z rollbackiem; kopia w localStorage |
+| v21 | FIX: monthly.js był kopią assets-table.js (od 7.05) — przywrócony kalkulator domowy i historia z commita 11745c7 |
+| v21 | FIX: _savedIncs znikały z bazy po pierwszym zapisie ustawień; edycja akcji spoza listy zapisywała pusty typ; druga nieruchomość była scalana z pierwszą |
+| v21 | FIX: ceny — cache nie zapisuje się przy niekompletnych danych, fallback na stare ceny; auto-snapshot tylko przy kompletnych cenach; przyciski ✎/✕ na mobile; podświetlenie menu; kolejka dialogów; esc() |
 | v20 | Śledzenie wyników: realne wpłaty per miesiąc (deposits, depositsEdited) zamiast szacunku z S.inv |
 | v20 | Modal snapshotu: dodawanie historycznych miesięcy, edycja, usuwanie |
 | v20 | "Zysk rynkowy" = MoM − deposits (realne), nie MoM − inv (plan) |

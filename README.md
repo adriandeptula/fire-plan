@@ -168,7 +168,7 @@ AI:          Claude Sonnet via Cloudflare Worker (klucz ANTHROPIC_KEY w Cloudfla
     ├── helpers.js      # Funkcje pomocnicze (PLN, pf, gTP…)
     ├── model.js        # Symulacja FIRE (sim()), calcIkePostFire()
     ├── settings.js     # Odczyt/zapis ustawień, colS(), apS()
-    ├── database.js     # Supabase: loadDB(), saveA(), sS()
+    ├── database.js     # Supabase: loadDB() (retry), saveA() (zapis różnicowy), commitAssets(), sS()
     ├── auth.js         # Login/logout Supabase
     ├── prices-client.js# Pobieranie cen ETF/krypto, cache 12h
     ├── assets-table.js # Tabela aktywów, fmtPrice(), grupowanie
@@ -225,6 +225,11 @@ ANTHROPIC_KEY = "sk-ant-..."
 Tabele:
 - `assets` — aktywa portfela
 - `settings` — wszystkie ustawienia + historia (JSON blob), w tym `portSnapshots`
+
+> **Bezpieczeństwo danych:** darmowy plan Supabase nie robi kopii zapasowych, a projekt usypia po tygodniu
+> bez ruchu. Po wznowieniu API przez chwilę zwraca 503 — aplikacja (od v21) czeka i ponawia, a przy
+> niepowodzeniu blokuje zapis zamiast nadpisywać dane. Mimo to eksportuj tabele `assets` i `settings`
+> (Table Editor → Export) od czasu do czasu. Szczegóły zasad zapisu: `Claude.md`.
 
 > **Uwaga przy tworzeniu projektu od zera:** po utworzeniu tabeli `assets` trzeba ręcznie dodać dwie kolumny których Supabase nie tworzy domyślnie:
 > ```sql
