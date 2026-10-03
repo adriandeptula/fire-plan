@@ -3,11 +3,12 @@ function gn(id) {
   document.querySelectorAll(".ni").forEach((e) => e.classList.remove("on"));
   document.querySelectorAll(".panel").forEach((e) => e.classList.remove("on"));
 
-  const nm = [
-    "dash", "portfel", "budzet", "budzet-dom", "mies",
-    "kalk", "plan", "wykres", "agent", "loans", "ust",
-  ];
-  document.querySelectorAll(".ni")[nm.indexOf(id)]?.classList.add("on");
+  // Podświetlenie po atrybucie onclick, a nie po indeksie — pozycja "Agent AI" jest
+  // wykomentowana w menu bocznym, więc indeksy się rozjeżdżały (zaznaczało złą pozycję).
+  document.querySelectorAll(".ni").forEach((e) => {
+    if ((e.getAttribute("onclick") || "").replace(/\s/g, "") === `gn('${id}')`)
+      e.classList.add("on");
+  });
   g("p-" + id)?.classList.add("on");
 
   document.querySelectorAll(".bni").forEach((e) => e.classList.remove("on"));

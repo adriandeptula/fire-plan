@@ -37,6 +37,21 @@ const PLN = (n) =>
       ) + " zł";
 const pct = (n) => (isNaN(n) ? "—" : n.toFixed(1) + "%");
 const pf = (v) => parseFloat(v) || 0;
+// Escape tekstu wpisanego przez użytkownika, zanim trafi do innerHTML / atrybutu value="".
+// Bez tego nazwa z cudzysłowem lub "<" psuje widok (i otwiera furtkę dla self-XSS).
+const esc = (v) =>
+  String(v ?? "").replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+  );
+// Bieżący miesiąc "YYYY-MM" w czasie LOKALNYM (toISOString daje UTC — o północy
+// 1. dnia miesiąca w Polsce wskazywałby jeszcze poprzedni miesiąc).
+const ymNow = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+};
+// Porównanie id niezależne od typu (baza może zwrócić liczbę, a HTML podaje tekst).
+const sameId = (a, b) => String(a) === String(b);
 const today = () =>
   new Date().toLocaleDateString("pl-PL", {
     weekday: "long",

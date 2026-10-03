@@ -28,7 +28,9 @@ function _rAImmediate() {
   rPlan();
   syncSl();
   cM();
-  cMin();
+  // cMin() to ~40 pełnych symulacji (bisekcja) — liczymy tylko gdy zakładka jest widoczna
+  // (swCT('min') woła cMin() samo przy przełączeniu). Wcześniej szło to przy każdym rA().
+  if (g("ck-min") && g("ck-min").style.display !== "none") cMin();
   cWyp();
   uIP();
   uPI();

@@ -5,6 +5,8 @@ function initTooltips() {
     const ic = wrap.querySelector(".tip-ic");
     const box = wrap.querySelector(".tip-box");
     if (!ic || !box) return;
+    if (wrap.dataset.tipInit) return; // initTooltips() jest wołane wielokrotnie — nie dubluj listenerów
+    wrap.dataset.tipInit = "1";
     ic.addEventListener("mouseenter", () => {
       const r = ic.getBoundingClientRect();
       box.style.display = "block";

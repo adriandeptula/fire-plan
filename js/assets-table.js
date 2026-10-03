@@ -150,6 +150,29 @@ function setPagPerPage(key, n) {
   if (key === "hist") rPortHist();
 }
 
+// Przyciski akcji dla wiersza tabeli — wspólne dla widoku desktop i mobilnego.
+// (Wcześniej na telefonie (<768 px) NIE było przycisków edycji/usuwania dla ETF/akcji/krypto,
+// a "replace" na stringu dla pojedynczej nieruchomości nigdy nie pasował do szablonu.)
+function groupActions(a, isNierGroup, count) {
+  if (isNierGroup && count > 1) {
+    return `<button class="del" onclick="openNierModal('${a.type}')" style="color:var(--go)" title="Zarządzaj">✎</button>`;
+  }
+  if (isNierGroup && count === 1) {
+    const id = esc(a.members[0].id);
+    return `<button class="del" onclick="editA('${id}')" style="color:var(--go)" title="Edytuj">✎</button><button class="del" onclick="delGroup(['${id}'])" title="Usuń">✕</button>`;
+  }
+  const idsAttr = esc(JSON.stringify(a.ids));
+  return `<button class="del" onclick="editA('${esc(a.ids[0])}')" style="color:var(--go)" title="Edytuj">✎</button><button class="del" onclick="delGroupById(this)" data-ids="${idsAttr}" title="Usuń">✕</button>`;
+}
+
+function groupDisplayName(a, isNierGroup, count) {
+  if (a.type === "nier-sprzedaz")
+    return count === 1 ? a.members[0].n || "Nieruchomość" : "Nieruchomości";
+  if (a.type === "nier-wynajem")
+    return count === 1 ? (a.members[0].n ? `Wynajem — ${a.members[0].n}` : "Wynajem") : "Wynajem";
+  return dispAssetName(a);
+}
+
 function rATbl(id, del) {
   const el = g(id);
   if (!el) return;
@@ -168,37 +191,31 @@ function rATbl(id, del) {
   }
   const mob = window.innerWidth <= 768;
 
+  const meta = (a) => {
+    const isNierGroup =
+      (a.type === "nier-sprzedaz" || a.type === "nier-wynajem") &&
+      a.members && a.members.length > 0;
+    const count = isNierGroup ? a.members.length : null;
+    return { isNierGroup, count, name: esc(groupDisplayName(a, isNierGroup, count)) };
+  };
+
   if (mob) {
     el.innerHTML =
       displayGroups
         .map((a) => {
-          const isNierGroup =
-            (a.type === "nier-sprzedaz" || a.type === "nier-wynajem") &&
-            a.members && a.members.length > 0;
+          const { isNierGroup, count, name } = meta(a);
           const v = getAssetValue2(a);
-          const count = isNierGroup ? a.members.length : null;
-
-          let nameStrMob;
-          if (a.type === "nier-sprzedaz")
-            nameStrMob = count === 1 ? a.members[0].n || "Nieruchomość" : "Nieruchomości";
-          else if (a.type === "nier-wynajem")
-            nameStrMob = count === 1 ? (a.members[0].n ? `Wynajem — ${a.members[0].n}` : "Wynajem") : "Wynajem";
-          else nameStrMob = dispAssetName(a);
-
           const unitsInfoMob = isNierGroup
             ? count + " szt."
             : !a.totalUnits || a.type === "manual"
               ? ""
               : fmtUnits(a.totalUnits);
-
-          let actionBtns = "";
-          if (isNierGroup && count > 1 && del) {
-            actionBtns = `<button class="del" onclick="openNierModal('${a.type}')" style="color:var(--go)" title="Zarządzaj">✎</button>`;
-          }
-
-          let main = `<div style="padding:11px 13px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px">
+          const actionBtns = del
+            ? `<div style="display:flex;gap:4px;flex-shrink:0">${groupActions(a, isNierGroup, count)}</div>`
+            : "";
+          return `<div style="padding:11px 13px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px">
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap"><strong style="font-size:13px">${nameStrMob}</strong>${assetBadge(a)}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap"><strong style="font-size:13px">${name}</strong>${assetBadge(a)}</div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mu)">${unitsInfoMob}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
@@ -206,32 +223,14 @@ function rATbl(id, del) {
         </div>
         ${actionBtns}
       </div>`;
-
-          if (isNierGroup && count === 1 && del) {
-            main = main.replace(
-              "</div>\n            </div>",
-              `</div>\n              <div style="display:flex;gap:4px"><button class="del" onclick="editA('${a.members[0].id}')" style="color:var(--go)">✎</button><button class="del" onclick="delGroup(['${a.members[0].id}'])">✕</button></div>\n            </div>`,
-            );
-          }
-          return main;
         })
         .join("") + pagHtml;
   } else {
     const dh = del ? "<th>Akcje</th>" : "";
     const rows = displayGroups
       .map((a) => {
-        const isNierGroup =
-          (a.type === "nier-sprzedaz" || a.type === "nier-wynajem") &&
-          a.members && a.members.length > 0;
-        const count = isNierGroup ? a.members.length : null;
+        const { isNierGroup, count, name } = meta(a);
         const v = getAssetValue2(a);
-
-        let nameStr;
-        if (a.type === "nier-sprzedaz")
-          nameStr = count === 1 ? a.members[0].n || "Nieruchomość" : "Nieruchomości";
-        else if (a.type === "nier-wynajem")
-          nameStr = count === 1 ? (a.members[0].n ? `Wynajem — ${a.members[0].n}` : "Wynajem") : "Wynajem";
-        else nameStr = dispAssetName(a);
 
         const pi =
           a.type === "manual" || a.type === "nier-sprzedaz"
@@ -249,19 +248,11 @@ function rATbl(id, del) {
               ? "—"
               : fmtUnits(a.totalUnits);
 
-        let actionCell = "";
-        if (del) {
-          if (isNierGroup && count > 1) {
-            actionCell = `<td style="display:flex;gap:4px"><button class="del" onclick="openNierModal('${a.type}')" style="color:var(--go)" title="Zarządzaj">✎</button></td>`;
-          } else if (isNierGroup && count === 1) {
-            actionCell = `<td style="display:flex;gap:4px"><button class="del" onclick="editA('${a.members[0].id}')" style="color:var(--go)" title="Edytuj">✎</button><button class="del" onclick="delGroup(['${a.members[0].id}'])" title="Usuń">✕</button></td>`;
-          } else {
-            const idsAttr2 = JSON.stringify(a.ids).replace(/'/g, "&apos;");
-            actionCell = `<td style="display:flex;gap:4px"><button class="del" onclick="editA('${a.ids[0]}')" style="color:var(--go)" title="Edytuj">✎</button><button class="del" onclick="delGroupById(this)" data-ids='${idsAttr2}' title="Usuń">✕</button></td>`;
-          }
-        }
+        const actionCell = del
+          ? `<td style="display:flex;gap:4px">${groupActions(a, isNierGroup, count)}</td>`
+          : "";
 
-        return `<tr><td><strong>${nameStr}</strong><div style="font-size:10px;color:var(--mu)">${isNierGroup ? "" : a.ticker || ""}</div></td><td>${assetBadge(a)}</td><td class="mn">${unitsDisp}</td><td>${pi}</td><td class="pos">${v}</td>${actionCell}</tr>`;
+        return `<tr><td><strong>${name}</strong><div style="font-size:10px;color:var(--mu)">${isNierGroup ? "" : esc(a.ticker || "")}</div></td><td>${assetBadge(a)}</td><td class="mn">${unitsDisp}</td><td>${pi}</td><td class="pos">${v}</td>${actionCell}</tr>`;
       })
       .join("");
     el.innerHTML = `<table><thead><tr><th>Aktywo</th><th>Konto</th><th>Ilość (szt.)</th><th>Cena/szt.</th><th>Wartość</th>${dh}</tr></thead><tbody>${rows}</tbody></table>${pagHtml}`;
@@ -271,19 +262,18 @@ function rATbl(id, del) {
 async function delGroup(ids) {
   const ok = await dlgConfirm("Usunąć to aktywo?", "🗑️", "Usuń", "Anuluj", true);
   if (!ok) return;
-  const idSet = new Set(ids);
-  A.filter((a) => idSet.has(a.id)).forEach((a) => {
-    portHistory.push({
-      id: uuid(), op: "sell", type: a.type, ticker: a.ticker,
-      n: a.n, units: a.units, mv: a.mv, wynajem: a.wynajem, konto: a.konto,
-      ts: new Date().toISOString(),
+  const idSet = new Set(ids.map(String));
+  await commitAssets(() => {
+    A.filter((a) => idSet.has(String(a.id))).forEach((a) => {
+      portHistory.push({
+        id: uuid(), op: "sell", type: a.type, ticker: a.ticker,
+        n: a.n, units: a.units, mv: a.mv, wynajem: a.wynajem, konto: a.konto,
+        ts: new Date().toISOString(),
+      });
     });
+    if (portHistory.length > 500) portHistory = portHistory.slice(-500);
+    A = A.filter((a) => !idSet.has(String(a.id)));
   });
-  if (portHistory.length > 500) portHistory = portHistory.slice(-500);
-  A = A.filter((a) => !idSet.has(a.id));
-  await saveA();
-  sS();
-  rA();
 }
 
 async function delGroupById(btn) {

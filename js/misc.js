@@ -24,8 +24,10 @@ function initIncognito() {
 }
 
 async function clearAll() {
+  if (!requireDb()) return;
   const ok = await dlgConfirm(
-    "Usunąć wszystkie dane? Tej operacji nie można cofnąć.",
+    "Usunąć wszystkie dane (aktywa, historię, ustawienia)? Tej operacji nie można cofnąć. " +
+      "Kopia zapasowa z tej przeglądarki również zostanie usunięta.",
     "🗑️",
     "Usuń wszystko",
     "Anuluj",
@@ -39,6 +41,7 @@ async function clearAll() {
   portSnapshots = [];
   loans = [];
   liabilities = [];
+  incs = [{ id: 1, n: "", k: "" }];
   // blankS() zdefiniowane w auth.js — jedyne źródło domyślnych wartości S
   S = blankS();
 
@@ -46,8 +49,11 @@ async function clearAll() {
   // ktore odczytuje formularze. Jesli formularze maja stare wartosci,
   // stare dane wracaja do S przed zapisem do Supabase.
   apS();
-  await saveA();
+  // saveA() usuwa z bazy tylko to, co znała (różnica) — nie robi już "delete wszystkiego".
+  const okA = await saveA();
   // saveSettingsNow() zamiast sS() — gwarantuje zapis przed zamknieciem strony
-  await saveSettingsNow();
+  const okS = await saveSettingsNow();
+  if (okA && okS) clearBackup();
+  else await dlgAlert("Nie wszystko udało się usunąć w bazie — odśwież stronę i sprawdź stan danych.", "⚠️");
   rA();
 }

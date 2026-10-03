@@ -20,6 +20,7 @@ function closeRepayModal() {
   g("repay-modal").classList.remove("on");
 }
 async function addLoan() {
+  if (!requireDb()) return;
   const from = g("loan-from").value,
     to = g("loan-to").value;
   if (from === to) {
@@ -43,11 +44,12 @@ async function addLoan() {
   });
   g("loan-amt").value = "";
   g("loan-note").value = "";
-  await sS();
+  await saveSettingsNow();
   closeLoanModal();
   rLoans();
 }
 async function addRepay() {
+  if (!requireDb()) return;
   const from = g("rep-from").value,
     to = g("rep-to").value;
   if (from === to) {
@@ -71,7 +73,7 @@ async function addRepay() {
   });
   g("rep-amt").value = "";
   g("rep-note").value = "";
-  await sS();
+  await saveSettingsNow();
   closeRepayModal();
   rLoans();
 }
@@ -123,7 +125,7 @@ function rLoans() {
           minute: "2-digit",
         });
         const isLoan = l.type === "loan";
-        return `<tr><td style="font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace">${dt}</td><td>${isLoan ? "📥 Pożyczka" : "📤 Spłata"}</td><td>${ACCOUNT_NAMES[l.from] || l.from}</td><td style="color:var(--mu)">→</td><td>${ACCOUNT_NAMES[l.to] || l.to}</td><td class="pos">${PLN(l.amt)}</td><td style="font-size:11px;color:var(--mu)">${l.note || ""}</td></tr>`;
+        return `<tr><td style="font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace">${dt}</td><td>${isLoan ? "📥 Pożyczka" : "📤 Spłata"}</td><td>${ACCOUNT_NAMES[l.from] || l.from}</td><td style="color:var(--mu)">→</td><td>${ACCOUNT_NAMES[l.to] || l.to}</td><td class="pos">${PLN(l.amt)}</td><td style="font-size:11px;color:var(--mu)">${esc(l.note || "")}</td></tr>`;
       })
       .join("");
     histEl.innerHTML = `<table><thead><tr><th>Data</th><th>Typ</th><th>Od</th><th></th><th>Do</th><th>Kwota</th><th>Opis</th></tr></thead><tbody>${rows}</tbody></table>`;
