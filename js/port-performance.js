@@ -20,11 +20,15 @@ function _snapDeposits(snap) {
 
 // ── AUTO-SNAPSHOT (raz na miesiąc, wywoływane w onLogin po refP) ──
 function savePortSnapshot(force = false) {
-  if (!user) return;
+  if (!user || !dbReady) return;
+  // Auto-snapshot tylko gdy znamy ceny WSZYSTKICH aktywów — inaczej zapisalibyśmy
+  // zaniżoną wartość (np. bez ETF-ów, gdy Yahoo nie odpowiedziało) i zostałaby
+  // ona na cały miesiąc, psując wykres wyników.
+  if (!force && missingPriceKeys().length) return;
   const fireVal = gFirePortfel();
   if (!fireVal && !force) return;
 
-  const ym = new Date().toISOString().slice(0, 7); // "YYYY-MM" (UTC)
+  const ym = ymNow(); // "YYYY-MM" (czas lokalny)
   const idx = portSnapshots.findIndex(s => s.ym === ym);
 
   if (idx >= 0 && !force) return; // ten miesiąc już zapisany
@@ -124,6 +128,7 @@ function closeSnapModal() {
 
 // ── MODAL: ZAPISZ ──
 async function saveSnap() {
+  if (!requireDb()) return;
   const id      = g('snap-id').value || null;
   const ym      = g('snap-ym').value;
   const fireVal = pf(g('snap-fire').value);
@@ -170,6 +175,7 @@ async function saveSnap() {
 
 // ── USUŃ SNAPSHOT ──
 async function deleteSnap(id) {
+  if (!requireDb()) return;
   const ok = await dlgConfirm(
     'Usunąć ten snapshot?', '🗑️', 'Usuń', 'Anuluj', true
   );
@@ -210,7 +216,7 @@ function rPortPerf() {
   // ── ZMIENNE POMOCNICZE ──
   const nowFire     = gFirePortfel();
   const oldest      = sorted[sorted.length - 1];
-  const nowYm       = new Date().toISOString().slice(0, 7);
+  const nowYm       = ymNow();
   const currentYear = nowYm.slice(0, 4);
 
   const totalChange = nowFire - oldest.fire;

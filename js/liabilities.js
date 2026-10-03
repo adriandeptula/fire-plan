@@ -18,7 +18,16 @@ function onLiabOp() {
   const nr = g("liab-name-row");
   if (nr) nr.style.display = op === "add" ? "block" : "none";
 }
+// Stary format: sam kwota kredytu w S.ks. Przenosimy ją do listy zobowiązań,
+// zanim cokolwiek dodamy lub opłacimy (wcześniej "opłać" ignorowało S.ks).
+function migrateLegacyLiab() {
+  if (!liabilities.length && pf(S.ks)) {
+    liabilities.push({ id: "ks-legacy", name: "Kredyt hipoteczny", amount: pf(S.ks) });
+    S.ks = "";
+  }
+}
 async function saveLiab() {
+  if (!requireDb()) return;
   const op = g("liab-op")?.value || "add";
   const name = g("liab-name")?.value.trim() || "";
   const amt = pf(g("liab-amt")?.value);
@@ -26,16 +35,8 @@ async function saveLiab() {
     await dlgAlert("Podaj kwotę.", "⚠️");
     return;
   }
+  migrateLegacyLiab();
   if (op === "add") {
-    // Migruj S.ks do liabilities przy pierwszym użyciu
-    if (!liabilities.length && pf(S.ks)) {
-      liabilities.push({
-        id: "ks-legacy",
-        name: "Kredyt hipoteczny",
-        amount: pf(S.ks),
-      });
-      S.ks = "";
-    }
     liabilities.push({
       id: uuid(),
       name: name || "Zobowiązanie",
@@ -52,7 +53,7 @@ async function saveLiab() {
     liabilities = liabilities.filter((l) => l.amount > 0.01);
   }
   closeLiabModal();
-  await sS();
+  await saveSettingsNow();
   rLiabList();
   rA();
 }
@@ -72,11 +73,12 @@ function rLiabList() {
   }
   const total = items.reduce((s, l) => s + pf(l.amount), 0);
   el.innerHTML = `<div class="tw"><table><thead><tr><th>Zobowiązanie</th><th>Kwota</th><th></th></tr></thead><tbody>
-    ${items.map((l) => `<tr><td>${l.name}</td><td class="mn">${PLN(l.amount)}</td><td><button class="del" onclick="delLiab('${l.id}')">✕</button></td></tr>`).join("")}
+    ${items.map((l) => `<tr><td>${esc(l.name)}</td><td class="mn">${PLN(l.amount)}</td><td><button class="del" onclick="delLiab('${esc(l.id)}')">✕</button></td></tr>`).join("")}
     <tr style="background:var(--s2)"><td style="font-weight:700">Łącznie</td><td class="mn" style="color:var(--re);font-weight:700">${PLN(total)}</td><td></td></tr>
   </tbody></table></div>`;
 }
 async function delLiab(id) {
+  if (!requireDb()) return;
   const ok = await dlgConfirm(
     "Usunąć to zobowiązanie?",
     "🗑️",
@@ -90,7 +92,7 @@ async function delLiab(id) {
   } else {
     liabilities = liabilities.filter((l) => l.id !== id);
   }
-  await sS();
+  await saveSettingsNow();
   rLiabList();
   rA();
 }

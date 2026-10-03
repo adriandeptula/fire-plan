@@ -19,7 +19,7 @@ async function sChat() {
   const btn = g("csbtn"),
     msgs = g("chat-m");
 
-  msgs.innerHTML += `<div class="msg u"><div class="msl">Ty</div><div class="mb">${text}</div></div>`;
+  msgs.innerHTML += `<div class="msg u"><div class="msl">Ty</div><div class="mb">${esc(text)}</div></div>`;
   inp.value = "";
   btn.disabled = true;
 
@@ -36,7 +36,7 @@ async function sChat() {
   const p = gP(),
     r = p ? getCachedSim() : null,
     f = (n) => new Intl.NumberFormat("pl-PL").format(Math.round(n || 0));
-  const br = pf(S.brutto) || 8,
+  const br = pf(S.brutto) || 7, // taki sam fallback jak w model.js (wcześniej 8)
     bk = pf(S.belka) || 19,
     inf = pf(S.inf) || 3.5;
   const ne = (br * (1 - bk / 100)).toFixed(2);
@@ -93,7 +93,7 @@ async function sChat() {
     const data = await res.json();
     const reply = data.content || data.error || "Przepraszam, wystąpił błąd.";
     chatH.push({ role: "assistant", content: reply });
-    g(tid).querySelector(".mb").innerHTML = reply.replace(/\n/g, "<br>");
+    g(tid).querySelector(".mb").innerHTML = esc(reply).replace(/\n/g, "<br>");
   } catch (e) {
     if (chatH.length > 0 && chatH[chatH.length - 1].role === "user") {
       chatH.pop();
@@ -101,7 +101,7 @@ async function sChat() {
     const isNetworkError = e instanceof TypeError;
     const hint = isNetworkError
       ? `Błąd sieci — sprawdź czy Worker <strong>fire-chat.adrianxdeptula.workers.dev</strong> jest aktywny.`
-      : `Błąd: ${e.message}. Sprawdź klucz <strong>ANTHROPIC_KEY</strong> w Cloudflare → Workers → fire-chat → Settings → Variables.`;
+      : `Błąd: ${esc(e.message)}. Sprawdź klucz <strong>ANTHROPIC_KEY</strong> w Cloudflare → Workers → fire-chat → Settings → Variables.`;
     g(tid).querySelector(".mb").innerHTML =
       `<span style="color:var(--re)">${hint}</span>`;
   }

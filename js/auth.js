@@ -15,7 +15,13 @@ async function doLogin() {
     password: p,
   });
   if (error) {
-    sLE("Błędny email lub hasło");
+    // 400 = złe dane logowania; reszta (0 / 5xx) = problem z połączeniem lub bazą
+    const net = !error.status || error.status >= 500;
+    sLE(
+      net
+        ? "Brak połączenia z serwerem logowania — spróbuj za chwilę"
+        : "Błędny email lub hasło",
+    );
     b.disabled = false;
     g("lbtxt").textContent = "Zaloguj się";
     return;
@@ -48,8 +54,15 @@ function blankS() {
   };
 }
 async function doLogout() {
+  // Dopisz oczekującą zmianę ustawień (debounce 800 ms), ale tylko gdy dane
+  // były poprawnie wczytane — inaczej nie wolno nic zapisywać.
+  if (user && dbReady && sPending) await saveSettingsNow();
   await sb.auth.signOut();
   user = null;
+  dbReady = false;
+  dbRows = new Map();
+  clearBackup(); // wylogowanie = kopia z tej przeglądarki znika (urządzenia współdzielone)
+  hideDbNotice();
   A = [];
   H = [];
   portHistory = [];
@@ -66,6 +79,8 @@ async function doLogout() {
   g("lbtn").disabled = false;
   g("lbtxt").textContent = "Zaloguj się";
 }
+
+let _loginListenersBound = false;
 async function onLogin() {
   g("LS").classList.add("hide");
   g("APP").style.display = "flex";
@@ -73,17 +88,21 @@ async function onLogin() {
   g("ue").textContent = user.email;
   g("s-em").textContent = user.email;
   initIncognito();
-  await loadDB();
+  const loaded = await loadDB();
+  if (!loaded) return; // komunikat i blokada zapisu ustawia loadDB(); nic nie nadpisujemy
   await refP();
   savePortSnapshot(); // auto snapshot raz na miesiąc po załadowaniu cen
   initTooltips();
+  // Listenery podpinamy tylko raz (wcześniej mnożyły się przy każdym logowaniu).
+  if (_loginListenersBound) return;
+  _loginListenersBound = true;
   document.querySelectorAll(".fi,.fs").forEach((el) =>
     el.addEventListener("change", () => {
       sS();
       rA();
     }),
   );
-  // Point 5: normalize comma to dot in all number inputs
+  // Przecinek -> kropka we wszystkich polach liczbowych
   document.querySelectorAll("input[type=number],.fi").forEach((el) => {
     el.addEventListener("input", () => {
       if (el.value && el.value.includes(","))

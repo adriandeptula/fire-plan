@@ -50,6 +50,12 @@ function apS() {
   if (cb) cb.checked = S.invInf === "1";
   const cb2 = g("s-calc-base");
   if (cb2) cb2.value = S.calcBase || "brutto";
+  // Etykiety % przy suwakach strategii IKE (wcześniej po wczytaniu pokazywały "0%")
+  [["ike-post-inv-b1", "ike-b1-val"], ["ike-post-inv-b2", "ike-b2-val"],
+   ["ike-post-inv-d1", "ike-d1-val"], ["ike-post-inv-d2", "ike-d2-val"]].forEach(([sl, lb]) => {
+    const s = g(sl), l = g(lb);
+    if (s && l) l.textContent = (s.value || 0) + "%";
+  });
   uIP();
   uPI();
   uIkeStrat();
